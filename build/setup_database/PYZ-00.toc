@@ -1,5 +1,5 @@
 ('C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
- '18\\build\\setup_database\\PYZ-00.pyz',
+ '21\\build\\setup_database\\PYZ-00.pyz',
  [('__future__',
    'C:\\Program Files\\Python311\\Lib\\__future__.py',
    'PYMODULE'),
@@ -24,7 +24,7 @@
   ('bz2', 'C:\\Program Files\\Python311\\Lib\\bz2.py', 'PYMODULE'),
   ('calendar', 'C:\\Program Files\\Python311\\Lib\\calendar.py', 'PYMODULE'),
   ('config',
-   'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - 18\\config.py',
+   'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - 21\\config.py',
    'PYMODULE'),
   ('configparser',
    'C:\\Program Files\\Python311\\Lib\\configparser.py',
@@ -184,135 +184,135 @@
   ('lzma', 'C:\\Program Files\\Python311\\Lib\\lzma.py', 'PYMODULE'),
   ('mysql',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\__init__.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\__init__.py',
    'PYMODULE'),
   ('mysql.connector',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\__init__.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\__init__.py',
    'PYMODULE'),
   ('mysql.connector._decorating',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\_decorating.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\_decorating.py',
    'PYMODULE'),
   ('mysql.connector._scripting',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\_scripting.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\_scripting.py',
    'PYMODULE'),
   ('mysql.connector.abstracts',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\abstracts.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\abstracts.py',
    'PYMODULE'),
   ('mysql.connector.authentication',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\authentication.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\authentication.py',
    'PYMODULE'),
   ('mysql.connector.charsets',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\charsets.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\charsets.py',
    'PYMODULE'),
   ('mysql.connector.connection',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\connection.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\connection.py',
    'PYMODULE'),
   ('mysql.connector.connection_cext',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\connection_cext.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\connection_cext.py',
    'PYMODULE'),
   ('mysql.connector.constants',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\constants.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\constants.py',
    'PYMODULE'),
   ('mysql.connector.conversion',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\conversion.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\conversion.py',
    'PYMODULE'),
   ('mysql.connector.cursor',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\cursor.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\cursor.py',
    'PYMODULE'),
   ('mysql.connector.cursor_cext',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\cursor_cext.py',
    'PYMODULE'),
   ('mysql.connector.custom_types',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\custom_types.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\custom_types.py',
    'PYMODULE'),
   ('mysql.connector.dbapi',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\dbapi.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\dbapi.py',
    'PYMODULE'),
   ('mysql.connector.errorcode',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\errorcode.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\errorcode.py',
    'PYMODULE'),
   ('mysql.connector.errors',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\errors.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\errors.py',
    'PYMODULE'),
   ('mysql.connector.locales',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\locales\\__init__.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\locales\\__init__.py',
    'PYMODULE'),
   ('mysql.connector.logger',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\logger.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\logger.py',
    'PYMODULE'),
   ('mysql.connector.network',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\network.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\network.py',
    'PYMODULE'),
   ('mysql.connector.opentelemetry',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\__init__.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\__init__.py',
    'PYMODULE'),
   ('mysql.connector.opentelemetry.constants',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\constants.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\constants.py',
    'PYMODULE'),
   ('mysql.connector.opentelemetry.context_propagation',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\context_propagation.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\context_propagation.py',
    'PYMODULE'),
   ('mysql.connector.opentelemetry.instrumentation',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\instrumentation.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\opentelemetry\\instrumentation.py',
    'PYMODULE'),
   ('mysql.connector.optionfiles',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\optionfiles.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\optionfiles.py',
    'PYMODULE'),
   ('mysql.connector.plugins',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\plugins\\__init__.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\plugins\\__init__.py',
    'PYMODULE'),
   ('mysql.connector.plugins.caching_sha2_password',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\plugins\\caching_sha2_password.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\plugins\\caching_sha2_password.py',
    'PYMODULE'),
   ('mysql.connector.pooling',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\pooling.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\pooling.py',
    'PYMODULE'),
   ('mysql.connector.protocol',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\protocol.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\protocol.py',
    'PYMODULE'),
   ('mysql.connector.tls_ciphers',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\tls_ciphers.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\tls_ciphers.py',
    'PYMODULE'),
   ('mysql.connector.types',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\types.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\types.py',
    'PYMODULE'),
   ('mysql.connector.utils',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\utils.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\utils.py',
    'PYMODULE'),
   ('mysql.connector.version',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '18\\agrovet\\Lib\\site-packages\\mysql\\connector\\version.py',
+   '21\\agrovet\\Lib\\site-packages\\mysql\\connector\\version.py',
    'PYMODULE'),
   ('numbers', 'C:\\Program Files\\Python311\\Lib\\numbers.py', 'PYMODULE'),
   ('opcode', 'C:\\Program Files\\Python311\\Lib\\opcode.py', 'PYMODULE'),

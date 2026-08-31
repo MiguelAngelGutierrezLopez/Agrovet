@@ -153,8 +153,9 @@ def data_dir(
 
 
 class AppBuilder:
-    def __init__(self, tmp_path, request, bundle_mode):
+    def __init__(self, tmp_path, bincache_path, request, bundle_mode):
         self._tmp_path = tmp_path
+        self._bincache_path = bincache_path
         self._request = request
         self._mode = bundle_mode
         self._spec_dir = tmp_path
@@ -200,9 +201,7 @@ class AppBuilder:
         print(f'[APP-BUILDER:{step_name}] {message}', file=sys.stdout)
         print(f'[APP-BUILDER:{step_name}] {message}', file=sys.stderr)
 
-    def test_script(
-        self, script, pyi_args=None, app_name=None, app_args=None, runtime=None, run_from_path=False, **kwargs
-    ):
+    def test_script(self, script, pyi_args=None, app_name=None, app_args=None, run_from_path=False, **kwargs):
         """
         Main method to wrap all phases of testing a Python script.
 
@@ -210,15 +209,9 @@ class AppBuilder:
         :param pyi_args: Additional arguments to pass to PyInstaller when creating executable.
         :param app_name: Name of the executable. This is equivalent to argument --name=APPNAME.
         :param app_args: Additional arguments to pass to
-        :param runtime: Time in seconds how long to keep executable running.
         :param toc_log: List of modules that are expected to be bundled with the executable.
         """
         __tracebackhide__ = True
-
-        # Skip interactive tests (the ones with `runtime` set) if `psutil` is unavailable, as we need it to properly
-        # clean up the process tree.
-        if runtime and psutil is None:
-            pytest.skip('Interactive tests require psutil for proper cleanup.')
 
         if pyi_args is None:
             pyi_args = []
@@ -238,22 +231,23 @@ class AppBuilder:
         self.script = str(script)  # might be a pathlib.Path at this point!
         assert os.path.exists(self.script), f'Script {self.script!r} not found.'
 
+        start_time = time.time()
         self._display_message('TEST-SCRIPT', 'Starting build...')
         if not self._test_building(args=pyi_args):
             pytest.fail(f'Building of {script} failed.')
 
-        self._display_message('TEST-SCRIPT', 'Build finished, now running executable...')
-        self._test_executables(app_name, args=app_args, runtime=runtime, run_from_path=run_from_path, **kwargs)
+        elapsed = time.time() - start_time
+        self._display_message('TEST-SCRIPT', f'Build finished in {elapsed:.1f} seconds, now running executable...')
+        self._test_executables(app_name, args=app_args, run_from_path=run_from_path, **kwargs)
         self._display_message('TEST-SCRIPT', 'Running executable finished.')
 
-    def _test_executables(self, name, args, runtime, run_from_path, **kwargs):
+    def _test_executables(self, name, args, run_from_path, **kwargs):
         """
         Run created executable to make sure it works.
 
         Multipackage-tests generate more than one exe-file and all of them have to be run.
 
         :param args: CLI options to pass to the created executable.
-        :param runtime: Time in seconds how long to keep the executable running.
 
         :return: Exit code of the executable.
         """
@@ -268,7 +262,7 @@ class AppBuilder:
             if toc_log.exists():
                 if not self._examine_executable(exe, toc_log):
                     pytest.fail(f'Matching .toc of {exe} failed.')
-            retcode = self._run_executable(exe, args, run_from_path, runtime)
+            retcode = self._run_executable(exe, args, run_from_path)
             if retcode != kwargs.get('retcode', 0):
                 pytest.fail(f'Running exe {exe} failed with return-code {retcode}.')
 
@@ -309,7 +303,7 @@ class AppBuilder:
                     exes.append(prog)
         return exes
 
-    def _run_executable(self, prog, args, run_from_path, runtime):
+    def _run_executable(self, prog, args, run_from_path):
         """
         Run executable created by PyInstaller.
 
@@ -350,9 +344,9 @@ class AppBuilder:
         args = [prog_name] + args
         # Using sys.stdout/sys.stderr for subprocess fixes printing messages in Windows command prompt. Py.test is then
         # able to collect stdout/sterr messages and display them if a test fails.
-        return self._run_executable_(args, exe_path, prog_env, prog_cwd, runtime)
+        return self._run_executable_(args, exe_path, prog_env, prog_cwd)
 
-    def _run_executable_(self, args, exe_path, prog_env, prog_cwd, runtime):
+    def _run_executable_(self, args, exe_path, prog_env, prog_cwd):
         # Use psutil.Popen, if available; otherwise, fall back to subprocess.Popen
         popen_implementation = subprocess.Popen if psutil is None else psutil.Popen
 
@@ -366,25 +360,28 @@ class AppBuilder:
         # for at least the specified amount of time, which is useful in "interactive" test applications that are not
         # expected exit on their own.
         stdout = stderr = None
+        cleanup_required = True
+        pytest_exception = None
+        custom_exception = None
         try:
-            timeout = runtime if runtime else _EXE_TIMEOUT
+            timeout = _EXE_TIMEOUT
             stdout, stderr = process.communicate(timeout=timeout)
             elapsed = time.time() - start_time
             retcode = process.returncode
             self._display_message(
                 'RUN-EXE', f'Process exited on its own after {elapsed:.1f} seconds with return code {retcode}.'
             )
+            cleanup_required = False  # No cleanup required
+        except pytest.fail.Exception as e:
+            # This might be thrown by pytest-timeout when using "signal" timeout mode.
+            self._display_message('RUN-EXE', f'Caught pytest.fail.Exception: {e}')
+            pytest_exception = e  # Store exception, so we can re-raise it after cleanup.
         except (subprocess.TimeoutExpired) if psutil is None else (psutil.TimeoutExpired, subprocess.TimeoutExpired):
-            if runtime:
-                # When 'runtime' is set, the expired timeout is a good sign that the executable was running successfully
-                # for the specified time.
-                self._display_message('RUN-EXE', f'Process reached expected run-time of {runtime} seconds.')
-                retcode = 0
-            else:
-                # Executable is still running and it is not interactive. Clean up the process tree, and fail the test.
-                self._display_message('RUN-EXE', f'Timeout while running executable (timeout: {timeout} seconds)!')
-                retcode = 1
+            # Timeout while running the executable; clean up the process tree, then raise exception to fail the test.
+            self._display_message('RUN-EXE', f'Timeout while running executable (timeout: {timeout} seconds)!')
+            custom_exception = RuntimeError(f"Timeout while running executable (timeout: {timeout} seconds)!")
 
+        if cleanup_required:
             if psutil is None:
                 # We are using subprocess.Popen(). Without psutil, we have no access to process tree; this poses a
                 # problem for onefile builds, where we would need to first kill the child (main application) process,
@@ -435,8 +432,17 @@ class AppBuilder:
                     try:
                         stdout, stderr = process.communicate(timeout=1)
                         self._display_message('RUN-EXE', 'Process stopped.')
-                    except (psutil.TimeoutExpired, subprocess.TimeoutExpire):
+                    except (psutil.TimeoutExpired, subprocess.TimeoutExpired):
                         self._display_message('RUN-EXE', 'Failed to stop the process (or its child process(es))!')
+
+        # If we caught pytest.fail.Exception exception earlier, re-raise it now
+        if pytest_exception:
+            self._display_message('RUN-EXE', 'Re-raising pytest.fail.Exception exception...')
+            raise pytest_exception
+
+        # If the above code set a custom exception, raise it now
+        if custom_exception:
+            raise custom_exception
 
         self._display_message('RUN-EXE', f'Done! Return code: {retcode}')
 
@@ -477,8 +483,8 @@ class AppBuilder:
         pyi_args = [self.script, *default_args, *args]
         # TODO: fix return code in running PyInstaller programmatically.
         PYI_CONFIG = configure.get_config()
-        # Override CACHEDIR for PyInstaller; relocate cache into `self._tmp_path`.
-        PYI_CONFIG['cachedir'] = str(self._tmp_path)
+        # Override CACHEDIR for PyInstaller; relocate cache into `self._bincache_path`.
+        PYI_CONFIG['cachedir'] = str(self._bincache_path)
 
         pyi_main.run(pyi_args, PYI_CONFIG)
         retcode = 0
@@ -523,9 +529,15 @@ def pyi_modgraph():
     initialize_modgraph()
 
 
+# Per-session binary cache directory.
+@pytest.fixture(scope='session')
+def pyi_bincache(tmp_path_factory):
+    return tmp_path_factory.mktemp("pyi-bincache-")
+
+
 # Run by default test as onedir and onefile.
 @pytest.fixture(params=['onedir', 'onefile'])
-def pyi_builder(tmp_path, monkeypatch, request, pyi_modgraph):
+def pyi_builder(tmp_path, monkeypatch, request, pyi_modgraph, pyi_bincache):
     # Save/restore environment variable PATH.
     monkeypatch.setenv('PATH', os.environ['PATH'])
     # PyInstaller or a test case might manipulate 'sys.path'. Reset it for every test.
@@ -536,7 +548,7 @@ def pyi_builder(tmp_path, monkeypatch, request, pyi_modgraph):
     # as the original value.
     monkeypatch.setattr('PyInstaller.config.CONF', {'pathex': []})
 
-    yield AppBuilder(tmp_path, request, request.param)
+    yield AppBuilder(tmp_path, pyi_bincache, request, request.param)
 
     # Clean up the temporary directory of a successful test
     if _PYI_BUILDER_CLEANUP and request.node.rep_setup.passed and request.node.rep_call.passed:
@@ -546,7 +558,7 @@ def pyi_builder(tmp_path, monkeypatch, request, pyi_modgraph):
 
 # Fixture for .spec based tests. With .spec it does not make sense to differentiate onefile/onedir mode.
 @pytest.fixture
-def pyi_builder_spec(tmp_path, request, monkeypatch, pyi_modgraph):
+def pyi_builder_spec(tmp_path, request, monkeypatch, pyi_modgraph, pyi_bincache):
     # Save/restore environment variable PATH.
     monkeypatch.setenv('PATH', os.environ['PATH'])
     # Set current working directory to
@@ -557,24 +569,9 @@ def pyi_builder_spec(tmp_path, request, monkeypatch, pyi_modgraph):
     # as the original value.
     monkeypatch.setattr('PyInstaller.config.CONF', {'pathex': []})
 
-    yield AppBuilder(tmp_path, request, None)
+    yield AppBuilder(tmp_path, pyi_bincache, request, None)
 
     # Clean up the temporary directory of a successful test
     if _PYI_BUILDER_CLEANUP and request.node.rep_setup.passed and request.node.rep_call.passed:
         if tmp_path.exists():
             shutil.rmtree(tmp_path, ignore_errors=True)
-
-
-@pytest.fixture
-def pyi_windowed_builder(pyi_builder: AppBuilder):
-    """A pyi_builder equivalent for testing --windowed applications."""
-
-    # psutil.Popen() somehow bypasses an application's windowed/console mode so that any application built in
-    # --windowed mode but invoked with psutil still receives valid std{in,out,err} handles and behaves exactly like
-    # a console application. In short, testing windowed mode with psutil is a null test. We must instead use subprocess.
-
-    def _run_executable_(args, exe_path, prog_env, prog_cwd, runtime):
-        return subprocess.run([exe_path, *args], env=prog_env, cwd=prog_cwd, timeout=runtime).returncode
-
-    pyi_builder._run_executable_ = _run_executable_
-    yield pyi_builder

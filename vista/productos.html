@@ -1016,6 +1016,7 @@
         // ===== VARIABLES GLOBALES =====
         let productos = [];
         let productosFiltrados = [];
+        let proveedores = [];
         let productoEditando = null;
         let productoAEliminar = null;
         let currentPage = 1;
@@ -1151,6 +1152,16 @@
                 }
             } catch (error) {
                 console.error('Error al cargar estadísticas:', error);
+            }
+        }
+
+        async function cargarProveedores() {
+            try {
+                const response = await fetch('/api/productos/proveedores');
+                const data = await response.json();
+                if (data.success) proveedores = data.proveedores || [];
+            } catch (error) {
+                console.error('Error al cargar proveedores:', error);
             }
         }
         
@@ -1298,11 +1309,13 @@
                      </td>
                     <td class="editable-cell">
                         <div class="cell-value" ${isEditing ? 'style="display: none;"' : ''}>
-                            ${escapeHtml(producto.proveedor_nombre || producto.proveedor || 'Sin proveedor')}
-                            ${producto.proveedor ? `<br><small style="color: var(--gris-medio);">Tel: ${escapeHtml(producto.proveedor)}</small>` : ''}
+                            ${producto.proveedor ? escapeHtml(producto.proveedor_nombre_completo || `${producto.nombre_proveedor || ''} de ${producto.nombre_empresa || ''}`) : ''}
                         </div>
                         ${isEditing ? `
-                            <input type="text" class="cell-input" value="${escapeHtml(producto.proveedor || '')}" data-field="proveedor" placeholder="Teléfono proveedor">
+                            <select class="cell-input" data-field="proveedor">
+                                <option value="">Sin proveedor</option>
+                                ${proveedores.map(proveedor => `<option value="${escapeHtml(proveedor.telefono)}" ${String(producto.proveedor || '') === String(proveedor.telefono) ? 'selected' : ''}>${escapeHtml(proveedor.nombre)}</option>`).join('')}
+                            </select>
                         ` : ''}
                      </td>
                     <td>
@@ -1598,8 +1611,8 @@
             // Cargar estado inicial del sidebar
             cargarEstadoSidebar();
             
-            // Cargar productos inicialmente
-            cargarProductosDesdeAPI();
+            // Cargar proveedores antes de renderizar la columna editable.
+            cargarProveedores().then(() => cargarProductosDesdeAPI());
 
             // Verificación de sesión - acceso libre
             const rol = sessionStorage.getItem('rol');

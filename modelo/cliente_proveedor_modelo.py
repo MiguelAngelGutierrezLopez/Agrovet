@@ -34,6 +34,141 @@ def serializar_datos(datos):
 
 class ClienteProveedorModel:
     
+    @staticmethod
+    def _normalizar_productos_ids(productos):
+        """Normalizar una lista de productos a IDs únicos"""
+        ids = []
+        if productos is None:
+            return ids
+
+        if isinstance(productos, str):
+            productos = [productos]
+
+        for item in productos:
+            if isinstance(item, dict):
+                valor = item.get('id') if item.get('id') is not None else item.get('producto_id')
+            elif isinstance(item, (int, float)):
+                valor = int(item)
+            else:
+                valor = item
+
+            if valor is None:
+                continue
+
+            if isinstance(valor, str):
+                valor = valor.strip()
+                if not valor:
+                    continue
+                if valor.isdigit():
+                    ids.append(int(valor))
+                    continue
+                if valor.startswith('[') and valor.endswith(']'):
+                    try:
+                        valor = eval(valor, {"__builtins__": {}}, {})
+                    except Exception:
+                        valor = []
+                elif ',' in valor:
+                    for parte in valor.split(','):
+                        parte = parte.strip()
+                        if parte and parte.isdigit():
+                            ids.append(int(parte))
+                    continue
+
+            if isinstance(valor, list):
+                for subvalor in valor:
+                    if isinstance(subvalor, (int, float)):
+                        ids.append(int(subvalor))
+                    elif isinstance(subvalor, str) and subvalor.strip().isdigit():
+                        ids.append(int(subvalor.strip()))
+                continue
+
+            if isinstance(valor, (int, float)):
+                ids.append(int(valor))
+                continue
+
+            if isinstance(valor, str) and valor.isdigit():
+                ids.append(int(valor))
+
+        ids = list(dict.fromkeys(ids))
+        return [int(id_producto) for id_producto in ids if id_producto is not None]
+
+    @staticmethod
+    def _sincronizar_productos_proveedor(telefono_proveedor, productos_ids):
+        """Asigna los productos seleccionados al proveedor usando la tabla junction proveedor_productos.
+        También actualiza el campo resumen 'producto' en la tabla proveedor."""
+        conn = None
+        cursor = None
+        try:
+            conn = db.get_connection()
+            cursor = conn.cursor()
+
+            productos_ids = ClienteProveedorModel._normalizar_productos_ids(productos_ids)
+
+            # 1. ELIMINAR TODAS LAS ASIGNACIONES PREVIAS DE ESTE PROVEEDOR EN LA TABLA JUNCTION
+            cursor.execute("DELETE FROM proveedor_productos WHERE proveedor_telefono = %s", (telefono_proveedor,))
+
+            # El campo productos.proveedor representa un único proveedor por producto.
+            # Al reasignar, se retiran primero las referencias anteriores.
+            cursor.execute("UPDATE productos SET proveedor = NULL WHERE proveedor = %s", (telefono_proveedor,))
+
+            # 2. INSERTAR LAS NUEVAS ASIGNACIONES EN LA TABLA JUNCTION
+            if productos_ids:
+                placeholders = ', '.join(['%s'] * len(productos_ids))
+
+                # Evita que la tabla junction conserve otro proveedor para un producto
+                # cuyo FK solo puede apuntar a un proveedor.
+                cursor.execute(
+                    f"DELETE FROM proveedor_productos WHERE producto_id IN ({placeholders}) AND proveedor_telefono <> %s",
+                    (*productos_ids, telefono_proveedor)
+                )
+
+                for producto_id in productos_ids:
+                    cursor.execute(
+                        "INSERT INTO proveedor_productos (proveedor_telefono, producto_id) VALUES (%s, %s) "
+                        "ON DUPLICATE KEY UPDATE fecha_asignacion = CURRENT_TIMESTAMP",
+                        (telefono_proveedor, producto_id)
+                    )
+
+                # Mantiene actualizada la llave foránea existente en productos.
+                cursor.execute(
+                    f"UPDATE productos SET proveedor = %s WHERE id IN ({placeholders})",
+                    (telefono_proveedor, *productos_ids)
+                )
+
+                # 3. OBTENER LOS NOMBRES DE LOS PRODUCTOS PARA EL RESUMEN TEXTO
+                cursor.execute(
+                    f"SELECT nombre FROM productos WHERE id IN ({placeholders}) ORDER BY nombre",
+                    tuple(productos_ids)
+                )
+                nombres = [row[0] for row in cursor.fetchall() if row and row[0]]
+                producto_texto = ', '.join(nombres)
+                
+                # 4. ACTUALIZAR CAMPO RESUMEN EN TABLA PROVEEDOR
+                cursor.execute(
+                    "UPDATE proveedor SET producto = %s WHERE telefono = %s",
+                    (producto_texto, telefono_proveedor)
+                )
+            else:
+                # Si no hay productos, limpiar el campo resumen
+                cursor.execute(
+                    "UPDATE proveedor SET producto = NULL WHERE telefono = %s",
+                    (telefono_proveedor,)
+                )
+
+            conn.commit()
+            logger.info(f"Productos sincronizados para proveedor {telefono_proveedor}: {len(productos_ids)} asignados via tabla junction")
+            return True, "Productos actualizados correctamente"
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logger.error(f"Error al sincronizar productos del proveedor {telefono_proveedor}: {str(e)}")
+            return False, f"Error al sincronizar productos: {str(e)}"
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    
     # ===== MÉTODOS PARA CLIENTES =====
     
     @staticmethod
@@ -1325,37 +1460,32 @@ class ClienteProveedorModel:
         try:
             conn = db.get_connection()
             cursor = conn.cursor()
-            
-            # Si productos es un string (viene del frontend), usarlo directamente
-            productos_str = None
-            if productos:
-                if isinstance(productos, str):
-                    productos_str = productos
-                elif isinstance(productos, list):
-                    # Extraer solo los nombres de los productos
-                    nombres_productos = []
-                    for p in productos:
-                        if isinstance(p, dict) and p.get('nombre'):
-                            nombres_productos.append(p['nombre'])
-                        elif isinstance(p, str):
-                            nombres_productos.append(p)
-                    
-                    if nombres_productos:
-                        productos_str = ", ".join(nombres_productos)
-            
-            # Crear proveedor
+
+            productos_ids = ClienteProveedorModel._normalizar_productos_ids(productos)
+
             sql_proveedor = """
             INSERT INTO proveedor (telefono, nombre_empresa, nombre_proveedor, correo, estado, producto, fecha_registro)
             VALUES (%s, %s, %s, %s, %s, %s, NOW())
             """
-            
-            cursor.execute(sql_proveedor, (telefono, nombre_empresa, nombre_proveedor, correo, estado, productos_str))
-            
+
+            producto_texto = None
+            if productos_ids:
+                placeholders = ', '.join(['%s'] * len(productos_ids))
+                cursor.execute(f"SELECT nombre FROM productos WHERE id IN ({placeholders}) ORDER BY nombre", tuple(productos_ids))
+                nombres = [row[0] for row in cursor.fetchall() if row and row[0]]
+                producto_texto = ', '.join(nombres)
+
+            cursor.execute(sql_proveedor, (telefono, nombre_empresa, nombre_proveedor, correo, estado, producto_texto))
             conn.commit()
-            
+
+            if productos_ids:
+                success, message = ClienteProveedorModel._sincronizar_productos_proveedor(telefono, productos_ids)
+                if not success:
+                    return False, message
+
             logger.info(f"Proveedor creado: {telefono} - {nombre_empresa}")
             return True, "Proveedor creado exitosamente"
-            
+
         except Exception as e:
             if conn:
                 conn.rollback()
@@ -1379,36 +1509,47 @@ class ClienteProveedorModel:
     
     @staticmethod
     def actualizar_proveedor(telefono_original, telefono, nombre_empresa, nombre_proveedor, correo, estado, producto=None):
-        """Actualizar información de un proveedor"""
+        """Actualizar información de un proveedor y sincronizar productos reales."""
         conn = None
         cursor = None
         try:
             conn = db.get_connection()
             cursor = conn.cursor()
-            
-            # Si se proporciona producto, actualizarlo
-            if producto is not None:
-                sql = """
-                UPDATE proveedor 
-                SET telefono = %s, nombre_empresa = %s, nombre_proveedor = %s, 
-                    correo = %s, estado = %s, producto = %s
-                WHERE telefono = %s
-                """
-                cursor.execute(sql, (telefono, nombre_empresa, nombre_proveedor, correo, estado, producto, telefono_original))
-            else:
-                sql = """
-                UPDATE proveedor 
-                SET telefono = %s, nombre_empresa = %s, nombre_proveedor = %s, 
-                    correo = %s, estado = %s
-                WHERE telefono = %s
-                """
-                cursor.execute(sql, (telefono, nombre_empresa, nombre_proveedor, correo, estado, telefono_original))
-            
+
+            productos_ids = ClienteProveedorModel._normalizar_productos_ids(producto)
+
+            sql = """
+            UPDATE proveedor 
+            SET telefono = %s, nombre_empresa = %s, nombre_proveedor = %s, 
+                correo = %s, estado = %s
+            WHERE telefono = %s
+            """
+            cursor.execute(sql, (telefono, nombre_empresa, nombre_proveedor, correo, estado, telefono_original))
+
+            producto_texto = None
+            if productos_ids:
+                placeholders = ', '.join(['%s'] * len(productos_ids))
+                cursor.execute(
+                    f"SELECT nombre FROM productos WHERE id IN ({placeholders}) ORDER BY nombre",
+                    tuple(productos_ids)
+                )
+                nombres = [row[0] for row in cursor.fetchall() if row and row[0]]
+                producto_texto = ', '.join(nombres)
+
+            cursor.execute(
+                "UPDATE proveedor SET producto = %s WHERE telefono = %s",
+                (producto_texto, telefono)
+            )
+
             conn.commit()
-            
+
+            success, message = ClienteProveedorModel._sincronizar_productos_proveedor(telefono, productos_ids)
+            if not success:
+                return False, message
+
             logger.info(f"Proveedor actualizado: {telefono_original} -> {telefono}")
             return True, "Proveedor actualizado exitosamente"
-            
+
         except Exception as e:
             if conn:
                 conn.rollback()
@@ -1472,9 +1613,9 @@ class ClienteProveedorModel:
             if not proveedor_info:
                 return None
             
-            # Obtener solo nombres de productos suministrados
+            # Obtener IDs y nombres para permitir quitar productos individualmente.
             sql_productos = """
-            SELECT p.nombre
+            SELECT p.id, p.nombre
             FROM productos p
             WHERE p.proveedor = %s
             ORDER BY p.nombre
@@ -1488,6 +1629,7 @@ class ClienteProveedorModel:
             
             historial = {
                 'proveedor': proveedor_info,
+                'productos': productos,
                 'productos_nombres': nombres_productos,
                 'resumen': {
                     'total_productos': len(nombres_productos),
@@ -1543,36 +1685,4 @@ class ClienteProveedorModel:
     @staticmethod
     def asignar_productos_a_proveedor(telefono_proveedor, ids_productos):
         """Asignar productos a un proveedor"""
-        conn = None
-        cursor = None
-        try:
-            conn = db.get_connection()
-            cursor = conn.cursor()
-            
-            if not ids_productos:
-                return True, "No hay productos para asignar"
-            
-            # Actualizar cada producto
-            for id_producto in ids_productos:
-                sql = """
-                UPDATE productos 
-                SET proveedor = %s 
-                WHERE id = %s
-                """
-                cursor.execute(sql, (telefono_proveedor, id_producto))
-            
-            conn.commit()
-            
-            logger.info(f"Asignados {len(ids_productos)} productos al proveedor {telefono_proveedor}")
-            return True, f"{len(ids_productos)} productos asignados exitosamente"
-            
-        except Exception as e:
-            if conn:
-                conn.rollback()
-            logger.error(f"Error al asignar productos: {str(e)}")
-            return False, f"Error al asignar productos: {str(e)}"
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+        return ClienteProveedorModel._sincronizar_productos_proveedor(telefono_proveedor, ids_productos)

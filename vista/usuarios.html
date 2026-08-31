@@ -274,7 +274,7 @@
     
     <div class="modal" id="confirmModal"><div class="confirm-modal-content"><h3 class="confirm-modal-title" id="modalTitle">Confirmar acción</h3><div class="confirm-modal-body" id="modalBody">¿Estás seguro de realizar esta acción?</div><div class="confirm-modal-actions"><button class="btn btn-secondary" id="modalCancel">Cancelar</button><button class="btn btn-danger" id="modalConfirm">Confirmar</button></div></div></div>
     
-    <div class="modal" id="modalProveedorCompleto"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-truck-loading"></i><span id="modalProveedorTitulo">Nuevo Proveedor</span></h2><button class="close-modal" onclick="cerrarModalProveedorCompleto()"><i class="fas fa-times"></i></button></div><div class="modal-body"><form id="formProveedorCompleto"><input type="hidden" id="proveedorTelefonoOriginal"><div class="form-row"><div class="form-group"><label class="form-label" for="proveedorTelefono">Teléfono *</label><input type="text" class="form-control" id="proveedorTelefono" required placeholder="Ej: 3001234567"></div><div class="form-group"><label class="form-label" for="proveedorEmpresa">Nombre Empresa *</label><input type="text" class="form-control" id="proveedorEmpresa" required placeholder="Ej: Agroinsumos S.A."></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="proveedorNombre">Nombre Proveedor *</label><input type="text" class="form-control" id="proveedorNombre" required placeholder="Ej: Juan Pérez"></div><div class="form-group"><label class="form-label" for="proveedorCorreo">Correo Electrónico</label><input type="email" class="form-control" id="proveedorCorreo" placeholder="proveedor@empresa.com"></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="proveedorEstado">Estado</label><select class="form-control" id="proveedorEstado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div></div><div style="margin: 20px 0; padding: 15px; background: var(--blanco-hueso); border-radius: 8px;"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-boxes"></i> Productos que Suministra (Opcional)</h3><div class="form-group"><label class="form-label" for="proveedorProductos">Productos (separados por comas)<small style="color: var(--gris-medio); font-weight: normal;"> Ej: Fertilizante Urea, Semillas de Maíz, Insecticida</small></label><textarea class="productos-textarea" id="proveedorProductos" rows="4" placeholder="Ingrese los productos que suministra este proveedor, separados por comas..." maxlength="500" oninput="actualizarContadorProductos()"></textarea><div class="contador-caracteres"><span id="contadorNumero">0</span>/500 caracteres</div></div></div><div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px;"><button type="button" class="btn btn-secondary" onclick="cerrarModalProveedorCompleto()">Cancelar</button><button type="submit" class="btn btn-warning" id="btnGuardarProveedor"><i class="fas fa-save"></i> Crear Proveedor</button></div></form></div></div></div>
+    <div class="modal" id="modalProveedorCompleto"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-truck-loading"></i><span id="modalProveedorTitulo">Nuevo Proveedor</span></h2><button class="close-modal" onclick="cerrarModalProveedorCompleto()"><i class="fas fa-times"></i></button></div><div class="modal-body"><form id="formProveedorCompleto"><input type="hidden" id="proveedorTelefonoOriginal"><div class="form-row"><div class="form-group"><label class="form-label" for="proveedorTelefono">Teléfono *</label><input type="text" class="form-control" id="proveedorTelefono" required placeholder="Ej: 3001234567"></div><div class="form-group"><label class="form-label" for="proveedorEmpresa">Nombre Empresa *</label><input type="text" class="form-control" id="proveedorEmpresa" required placeholder="Ej: Agroinsumos S.A."></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="proveedorNombre">Nombre Proveedor *</label><input type="text" class="form-control" id="proveedorNombre" required placeholder="Ej: Juan Pérez"></div><div class="form-group"><label class="form-label" for="proveedorCorreo">Correo Electrónico</label><input type="email" class="form-control" id="proveedorCorreo" placeholder="proveedor@empresa.com"></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="proveedorEstado">Estado</label><select class="form-control" id="proveedorEstado"><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select></div></div><div style="margin: 20px 0; padding: 15px; background: var(--blanco-hueso); border-radius: 8px;"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-boxes"></i> Productos que Suministra (Opcional)</h3><div class="form-group"><label class="form-label" for="proveedorProductoBusqueda">Buscar producto</label><div class="producto-input-container" style="width: 100%;"><input type="text" class="form-control" id="proveedorProductoBusqueda" placeholder="Escribe el nombre o la categoría del producto"><div id="proveedorProductoSugerencias" class="sugerencias-productos"></div></div></div><div class="form-group"><label class="form-label" for="proveedorCategoriaFiltro">Filtrar por categoría</label><select class="form-control" id="proveedorCategoriaFiltro"><option value="">Todas las categorías</option></select></div><div class="form-group"><label class="form-label">Productos seleccionados</label><div id="proveedorProductosSeleccionados" style="display:flex; flex-wrap:wrap; gap:8px; min-height:42px; padding:10px; background:white; border:1px solid var(--gris-claro); border-radius:8px;"></div></div><div class="form-group"><label class="form-label">Productos disponibles</label><div id="proveedorProductosDisponibles" style="max-height:240px; overflow-y:auto; background:white; border:1px solid var(--gris-claro); border-radius:8px; padding:8px;"></div></div><input type="hidden" id="proveedorProductos"></div><div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px;"><button type="button" class="btn btn-secondary" onclick="cerrarModalProveedorCompleto()">Cancelar</button><button type="submit" class="btn btn-warning" id="btnGuardarProveedor"><i class="fas fa-save"></i> Crear Proveedor</button></div></form></div></div></div>
     
     <div class="modal" id="modalVentaManual"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-cash-register"></i><span id="modalVentaManualTitulo">Nueva Venta Manual</span></h2><button class="close-modal" onclick="cerrarModalVentaManual()"><i class="fas fa-times"></i></button></div><div class="modal-body"><form id="formVentaManual"><input type="hidden" id="ventaManualClienteCedula"><input type="hidden" id="ventaManualClienteNombre"><div class="form-row"><div class="form-group"><label class="form-label" for="ventaManualFecha">Fecha de Venta *</label><input type="date" class="form-control" id="ventaManualFecha" required></div><div class="form-group"><label class="form-label" for="ventaManualTotal">Total ($) *</label><input type="number" class="form-control" id="ventaManualTotal" step="0.01" min="0" required><small>Ingrese el monto total de la venta manualmente</small></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="ventaManualAnticipo">Anticipo ($)</label><input type="number" class="form-control" id="ventaManualAnticipo" step="0.01" min="0" value="0"></div><div class="form-group"><label class="form-label" for="ventaManualDiasCredito">Días de Crédito</label><input type="number" class="form-control" id="ventaManualDiasCredito" min="1" value="30"></div></div><div style="margin: 20px 0; padding: 15px; background: var(--blanco-hueso); border-radius: 8px;"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-boxes"></i> Productos Vendidos (Opcional)<small style="color: var(--gris-medio); font-weight: normal; font-size: 12px; margin-left: 10px;">Puede dejar productos en blanco si solo desea registrar el monto</small></h3><div id="productosVentaManualContainer"><div class="producto-item"><div style="display: flex; gap: 10px; align-items: center;"><div class="producto-input-container"><input type="text" class="producto-input" placeholder="Nombre del producto (opcional)" oninput="buscarProductosSugeridos(this)"><div class="sugerencias-productos"></div></div><input type="number" class="cantidad-input" placeholder="Cantidad" min="1" value="1"><button type="button" class="btn-eliminar-producto" onclick="eliminarProductoVentaManual(this)"><i class="fas fa-times"></i></button></div></div></div><button type="button" class="btn btn-secondary btn-sm" onclick="agregarProductoVentaManual()" style="margin-top: 10px;"><i class="fas fa-plus"></i> Agregar Producto</button></div><div class="form-group"><label class="form-label" for="ventaManualObservaciones">Observaciones</label><textarea class="form-control" id="ventaManualObservaciones" rows="3" placeholder="Detalles adicionales de la venta..."></textarea></div><div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px;"><button type="button" class="btn btn-secondary" onclick="cerrarModalVentaManual()">Cancelar</button><button type="submit" class="btn btn-warning" id="btnRegistrarVentaManual"><i class="fas fa-save"></i> Registrar Venta</button></div></form></div></div></div>
 
@@ -340,7 +340,7 @@
             return ordenarProveedores(filtrados, orden);
         }
         
-        async function cargarTodosProductos() { try { const r = await apiRequest('/productos/disponibles'); if (r.success) todosProductos = r.productos || []; } catch(e) { console.error(e); } }
+        async function cargarTodosProductos() { try { const r = await apiRequest('/productos/catalogo'); if (r.success) { todosProductos = r.productos || []; rellenarCategoriasProveedor(); if (document.getElementById('modalProveedorCompleto').style.display === 'flex') renderSeleccionProveedorProductos(); } } catch(e) { console.error(e); } }
         function buscarProductosSugeridos(input) { const term = input.value.toLowerCase().trim(), sugDiv = input.parentElement.querySelector('.sugerencias-productos'); if (timeoutBusqueda) clearTimeout(timeoutBusqueda); timeoutBusqueda = setTimeout(async () => { if (term.length < 2) { sugDiv.style.display = 'none'; return; } if (!todosProductos.length) await cargarTodosProductos(); const sugs = todosProductos.filter(p => p.nombre.toLowerCase().includes(term)).slice(0,10); if (!sugs.length) { sugDiv.innerHTML = '<div class="producto-sugerencia">No se encontraron productos</div>'; sugDiv.style.display = 'block'; return; } sugDiv.innerHTML = sugs.map(p => `<div class="producto-sugerencia" data-nombre="${p.nombre}" onclick="seleccionarProductoSugerido(this, '${p.nombre.replace(/'/g, "\\'")}')">${p.nombre}</div>`).join(''); sugDiv.style.display = 'block'; }, 300); }
         function seleccionarProductoSugerido(el, nom) { const input = el.closest('.producto-input-container').querySelector('.producto-input'); input.value = nom; el.closest('.sugerencias-productos').style.display = 'none'; input.focus(); }
         document.addEventListener('click', e => { if (!e.target.closest('.producto-input-container')) document.querySelectorAll('.sugerencias-productos').forEach(d => d.style.display = 'none'); });
@@ -385,13 +385,136 @@
         
         async function guardarProveedor(telefono) { try { const row = document.querySelector(`tr[data-telefono="${telefono}"]`); const data = { telefono: telefono, nombre_empresa: '', nombre_proveedor: '', correo: '', estado: 'activo' }; row.querySelectorAll('.cell-input').forEach(i => { data[i.dataset.field] = i.value.trim(); }); await apiRequest(`/proveedor/${telefono}`, 'PUT', data); showNotification('Proveedor actualizado', 'success'); proveedorEditando = null; await cargarTodosProveedores(); currentPageProveedores = 1; } catch(e) { showNotification('Error al guardar', 'error'); } }
         function cancelarEdicionProveedor(telefono) { proveedorEditando = null; cargarProveedores(); }
-        async function editarProveedorCompleto(telefono) { try { const r = await apiRequest(`/proveedor/${telefono}`); if (r.success) mostrarModalProveedorCompleto(true, r.proveedor); } catch(e) { showNotification('Error al cargar proveedor', 'error'); } }
-        async function nuevoProveedor() { if (!todosProveedores.length) await cargarTodosProveedores(); mostrarModalProveedorCompleto(false); }
-        function mostrarModalProveedorCompleto(editar=false, data=null) { esEdicionProveedor = editar; document.getElementById('modalProveedorTitulo').textContent = editar ? 'Editar Proveedor' : 'Nuevo Proveedor'; document.getElementById('btnGuardarProveedor').innerHTML = editar ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-save"></i> Crear Proveedor'; document.getElementById('proveedorTelefonoOriginal').value = ''; document.getElementById('proveedorTelefono').value = ''; document.getElementById('proveedorEmpresa').value = ''; document.getElementById('proveedorNombre').value = ''; document.getElementById('proveedorCorreo').value = ''; document.getElementById('proveedorEstado').value = 'activo'; document.getElementById('proveedorProductos').value = ''; if (editar && data) { proveedorEditandoTelefono = data.telefono; document.getElementById('proveedorTelefonoOriginal').value = data.telefono; document.getElementById('proveedorTelefono').value = data.telefono; document.getElementById('proveedorEmpresa').value = data.nombre_empresa||''; document.getElementById('proveedorNombre').value = data.nombre_proveedor||''; document.getElementById('proveedorCorreo').value = data.correo||''; document.getElementById('proveedorEstado').value = data.estado||'activo'; document.getElementById('proveedorProductos').value = data.producto||''; } document.getElementById('modalProveedorCompleto').style.display = 'flex'; }
-        function cerrarModalProveedorCompleto() { document.getElementById('modalProveedorCompleto').style.display = 'none'; esEdicionProveedor = false; proveedorEditandoTelefono = null; }
-        async function guardarProveedorCompleto() { try { const telefonoOriginal = document.getElementById('proveedorTelefonoOriginal').value, telefono = document.getElementById('proveedorTelefono').value, nombreEmpresa = document.getElementById('proveedorEmpresa').value, nombreProveedor = document.getElementById('proveedorNombre').value, correo = document.getElementById('proveedorCorreo').value, estado = document.getElementById('proveedorEstado').value, productos = document.getElementById('proveedorProductos').value; if (!telefono||!nombreEmpresa||!nombreProveedor) { showNotification('Teléfono, empresa y nombre son requeridos', 'error'); return; } const data = { telefono, nombre_empresa: nombreEmpresa, nombre_proveedor: nombreProveedor, correo: correo||null, estado, productos: productos||'' }; let result; if (esEdicionProveedor && telefonoOriginal) result = await apiRequest(`/proveedor/${telefonoOriginal}`, 'PUT', data); else result = await apiRequest('/proveedor/completo', 'POST', data); if (result.success) { showNotification(result.message, 'success'); cerrarModalProveedorCompleto(); await cargarTodosProveedores(); currentPageProveedores = 1; if (tabActual !== 'proveedores') cambiarTab('proveedores'); } } catch(e) { showNotification('Error al guardar', 'error'); } }
+        async function editarProveedorCompleto(telefono) { try { if (!todosProductos.length) await cargarTodosProductos(); const r = await apiRequest(`/proveedor/${telefono}`); if (r.success) mostrarModalProveedorCompleto(true, r.proveedor); } catch(e) { showNotification('Error al cargar proveedor', 'error'); } }
+        async function nuevoProveedor() { if (!todosProveedores.length) await cargarTodosProveedores(); if (!todosProductos.length) await cargarTodosProductos(); mostrarModalProveedorCompleto(false); }
+        function renderSeleccionProveedorProductos() {
+            const busqueda = document.getElementById('proveedorProductoBusqueda').value.trim().toLowerCase();
+            const categoria = document.getElementById('proveedorCategoriaFiltro').value;
+            const seleccionados = (document.getElementById('proveedorProductos').value || '').split(',').map(v => Number(v.trim())).filter(Boolean);
+            const lista = (todosProductos || []).filter(producto => {
+                const coincideTexto = !busqueda || (producto.nombre || '').toLowerCase().includes(busqueda) || (producto.categoria || '').toLowerCase().includes(busqueda);
+                const coincideCategoria = !categoria || (producto.categoria || '').toLowerCase() === categoria.toLowerCase();
+                return coincideTexto && coincideCategoria;
+            }).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+            const chips = seleccionados.map(id => {
+                const producto = (todosProductos || []).find(item => Number(item.id) === Number(id));
+                if (!producto) return '';
+                return `<span class="selected-product-chip" data-id="${producto.id}" style="display:inline-flex; align-items:center; gap:8px; background:#f4e5df; color:#7c4a38; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:600;"><span>${producto.nombre}</span><button type="button" class="remove-product-chip" data-id="${producto.id}" style="border:none; background:transparent; color:#7c4a38; font-size:16px; cursor:pointer; padding:0; line-height:1;">×</button></span>`;
+            }).join('') || '<span style="color:var(--gris-medio); font-style:italic;">Sin productos seleccionados</span>';
+
+            document.getElementById('proveedorProductosSeleccionados').innerHTML = chips;
+            document.getElementById('proveedorProductosDisponibles').innerHTML = !lista.length
+                ? '<div style="padding:12px; color:var(--gris-medio);">No hay productos que coincidan con la búsqueda o la categoría.</div>'
+                : lista.map(producto => {
+                    const checked = seleccionados.includes(Number(producto.id));
+                    return `<label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 10px; border-bottom:1px solid #f1e7e1; cursor:pointer;">
+                        <span style="display:flex; flex-direction:column; gap:2px;">
+                            <strong style="font-size:13px;">${producto.nombre}</strong>
+                            <small style="color:var(--gris-medio);">${producto.categoria || 'Sin categoría'}</small>
+                        </span>
+                        <input type="checkbox" value="${producto.id}" ${checked ? 'checked' : ''} style="width:16px; height:16px; accent-color: var(--terracota);">
+                    </label>`;
+                }).join('');
+
+            document.getElementById('proveedorProductos').value = seleccionados.join(',');
+        }
+
+        function agregarProductoProveedor(idProducto) {
+            const seleccionados = (document.getElementById('proveedorProductos').value || '').split(',').map(v => Number(v.trim())).filter(Boolean);
+            if (!seleccionados.includes(Number(idProducto))) {
+                seleccionados.push(Number(idProducto));
+                document.getElementById('proveedorProductos').value = seleccionados.join(',');
+            }
+            renderSeleccionProveedorProductos();
+        }
+
+        function quitarProductoProveedor(idProducto) {
+            const seleccionados = (document.getElementById('proveedorProductos').value || '').split(',').map(v => Number(v.trim())).filter(Boolean);
+            const filtrados = seleccionados.filter(id => Number(id) !== Number(idProducto));
+            document.getElementById('proveedorProductos').value = filtrados.join(',');
+            renderSeleccionProveedorProductos();
+        }
+
+        function rellenarCategoriasProveedor() {
+            const categorias = [...new Set((todosProductos || []).map(item => item.categoria).filter(Boolean))].sort();
+            const select = document.getElementById('proveedorCategoriaFiltro');
+            select.innerHTML = '<option value="">Todas las categorías</option>' + categorias.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        }
+
+        function inicializarSelectorProductosProveedor() {
+            const inputBusqueda = document.getElementById('proveedorProductoBusqueda');
+            const sugerencias = document.getElementById('proveedorProductoSugerencias');
+
+            inputBusqueda.oninput = () => {
+                const texto = inputBusqueda.value.trim().toLowerCase();
+                const resultados = (todosProductos || []).filter(producto => (producto.nombre || '').toLowerCase().includes(texto) || (producto.categoria || '').toLowerCase().includes(texto)).slice(0, 8);
+                if (!texto) {
+                    sugerencias.style.display = 'none';
+                    renderSeleccionProveedorProductos();
+                    return;
+                }
+
+                sugerencias.innerHTML = resultados.length
+                    ? resultados.map(producto => `<button type="button" class="proveedor-sug-item" data-id="${producto.id}" style="display:block; width:100%; text-align:left; border:none; background:#fff; padding:10px 12px; border-bottom:1px solid #f1e7e1; cursor:pointer;">${producto.nombre}<small style="display:block; color:var(--gris-medio);">${producto.categoria || 'Sin categoría'}</small></button>`).join('')
+                    : '<div style="padding:10px; color:var(--gris-medio);">No se encontraron productos.</div>';
+                sugerencias.style.display = resultados.length ? 'block' : 'none';
+                renderSeleccionProveedorProductos();
+            };
+
+            sugerencias.addEventListener('click', (event) => {
+                const btn = event.target.closest('.proveedor-sug-item');
+                if (!btn) return;
+                agregarProductoProveedor(btn.dataset.id);
+                inputBusqueda.value = '';
+                sugerencias.style.display = 'none';
+            });
+
+            document.getElementById('proveedorCategoriaFiltro').onchange = () => renderSeleccionProveedorProductos();
+            document.getElementById('proveedorProductosDisponibles').addEventListener('change', (event) => {
+                const checkbox = event.target.closest('input[type="checkbox"]');
+                if (!checkbox) return;
+                const value = Number(checkbox.value);
+                if (checkbox.checked) {
+                    agregarProductoProveedor(value);
+                } else {
+                    quitarProductoProveedor(value);
+                }
+            });
+
+            document.getElementById('proveedorProductosSeleccionados').addEventListener('click', (event) => {
+                const btn = event.target.closest('.remove-product-chip');
+                if (!btn) return;
+                quitarProductoProveedor(btn.dataset.id);
+            });
+        }
+
+        function mostrarModalProveedorCompleto(editar=false, data=null) { esEdicionProveedor = editar; document.getElementById('modalProveedorTitulo').textContent = editar ? 'Editar Proveedor' : 'Nuevo Proveedor'; document.getElementById('btnGuardarProveedor').innerHTML = editar ? '<i class="fas fa-save"></i> Guardar Cambios' : '<i class="fas fa-save"></i> Crear Proveedor'; document.getElementById('proveedorTelefonoOriginal').value = ''; document.getElementById('proveedorTelefono').value = ''; document.getElementById('proveedorEmpresa').value = ''; document.getElementById('proveedorNombre').value = ''; document.getElementById('proveedorCorreo').value = ''; document.getElementById('proveedorEstado').value = 'activo'; document.getElementById('proveedorProductos').value = ''; document.getElementById('proveedorProductoBusqueda').value = ''; document.getElementById('proveedorCategoriaFiltro').value = ''; if (editar && data) { proveedorEditandoTelefono = data.telefono; document.getElementById('proveedorTelefonoOriginal').value = data.telefono; document.getElementById('proveedorTelefono').value = data.telefono; document.getElementById('proveedorEmpresa').value = data.nombre_empresa||''; document.getElementById('proveedorNombre').value = data.nombre_proveedor||''; document.getElementById('proveedorCorreo').value = data.correo||''; document.getElementById('proveedorEstado').value = data.estado||'activo'; }
+        if (editar && data && data.telefono) {
+            cargarProductosProveedorEnFormulario(data.telefono);
+        } else {
+            renderSeleccionProveedorProductos();
+        }
+        document.getElementById('modalProveedorCompleto').style.display = 'flex';
+        }
+
+        async function cargarProductosProveedorEnFormulario(telefono) {
+            try {
+                const r = await apiRequest(`/proveedor/${telefono}/productos`);
+                const seleccionados = (r.success && Array.isArray(r.productos)) ? r.productos.map(p => Number(p.id)).filter(Boolean) : [];
+                document.getElementById('proveedorProductos').value = seleccionados.join(',');
+                renderSeleccionProveedorProductos();
+            } catch (e) {
+                document.getElementById('proveedorProductos').value = '';
+                renderSeleccionProveedorProductos();
+            }
+        }
+
+        function cerrarModalProveedorCompleto() { document.getElementById('modalProveedorCompleto').style.display = 'none'; esEdicionProveedor = false; proveedorEditandoTelefono = null; document.getElementById('proveedorProductoBusqueda').value = ''; document.getElementById('proveedorProductoSugerencias').style.display = 'none'; }
+        async function guardarProveedorCompleto() { try { const telefonoOriginal = document.getElementById('proveedorTelefonoOriginal').value, telefono = document.getElementById('proveedorTelefono').value, nombreEmpresa = document.getElementById('proveedorEmpresa').value, nombreProveedor = document.getElementById('proveedorNombre').value, correo = document.getElementById('proveedorCorreo').value, estado = document.getElementById('proveedorEstado').value, productos = (document.getElementById('proveedorProductos').value || '').split(',').map(v => Number(v.trim())).filter(Boolean); if (!telefono||!nombreEmpresa||!nombreProveedor) { showNotification('Teléfono, empresa y nombre son requeridos', 'error'); return; } const data = { telefono, nombre_empresa: nombreEmpresa, nombre_proveedor: nombreProveedor, correo: correo||null, estado, productos: productos }; let result; if (esEdicionProveedor && telefonoOriginal) result = await apiRequest(`/proveedor/${telefonoOriginal}`, 'PUT', data); else result = await apiRequest('/proveedor/completo', 'POST', data); if (result.success) { showNotification(result.message, 'success'); cerrarModalProveedorCompleto(); await cargarTodosProveedores(); currentPageProveedores = 1; if (tabActual !== 'proveedores') cambiarTab('proveedores'); } } catch(e) { showNotification('Error al guardar', 'error'); } }
         
-        async function verHistorialProveedor(telefono) { try { const r = await apiRequest(`/proveedor/${telefono}/historial`); if (r.success) { const h = r.historial; document.getElementById('historialProveedorNombre').textContent = `Historial - ${h.proveedor.nombre_empresa}`; document.getElementById('resumenProveedorGrid').innerHTML = `<div class="resumen-item"><div class="resumen-valor">${h.resumen.total_productos||0}</div><div class="resumen-label">Productos</div></div><div class="resumen-item"><div class="resumen-valor" style="color:${h.resumen.estado==='activo'?'var(--exito)':'var(--error)'}">${h.resumen.estado==='activo'?'Activo':'Inactivo'}</div><div class="resumen-label">Estado</div></div>`; const prodList = document.getElementById('productosProveedorList'); const nombres = h.productos_nombres||[]; prodList.innerHTML = nombres.length ? nombres.map(n=>`<div style="padding:10px;border-bottom:1px solid var(--gris-claro)"><i class="fas fa-box"></i> ${n}</div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--gris-medio)"><i class="fas fa-boxes" style="font-size:48px;margin-bottom:10px"></i><p>No hay productos</p></div>'; document.getElementById('historialProveedorModal').style.display = 'flex'; } } catch(e) { showNotification('Error al cargar historial', 'error'); } }
+        async function verHistorialProveedor(telefono) { try { const r = await apiRequest(`/proveedor/${telefono}/historial`); if (r.success) { const h = r.historial; document.getElementById('historialProveedorNombre').textContent = `Historial - ${h.proveedor.nombre_empresa}`; document.getElementById('resumenProveedorGrid').innerHTML = `<div class="resumen-item"><div class="resumen-valor">${h.resumen.total_productos||0}</div><div class="resumen-label">Productos</div></div><div class="resumen-item"><div class="resumen-valor" style="color:${h.resumen.estado==='activo'?'var(--exito)':'var(--error)'}">${h.resumen.estado==='activo'?'Activo':'Inactivo'}</div><div class="resumen-label">Estado</div></div>`; const prodList = document.getElementById('productosProveedorList'); const productosAsignados = h.productos||[]; prodList.innerHTML = productosAsignados.length ? productosAsignados.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border-bottom:1px solid var(--gris-claro)"><span><i class="fas fa-box"></i> ${p.nombre}</span><button type="button" class="btn-icon btn-delete" title="Quitar producto" onclick="quitarProductoDelProveedor('${telefono}', ${p.id})"><i class="fas fa-unlink"></i></button></div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--gris-medio)"><i class="fas fa-boxes" style="font-size:48px;margin-bottom:10px"></i><p>No hay productos</p></div>'; document.getElementById('historialProveedorModal').style.display = 'flex'; } } catch(e) { showNotification('Error al cargar historial', 'error'); } }
+        async function quitarProductoDelProveedor(telefono, productoId) { try { const r = await apiRequest(`/proveedor/${telefono}/productos/${productoId}`, 'DELETE'); if (!r.success) throw new Error(r.message || 'No se pudo quitar el producto'); showNotification('Producto quitado del proveedor', 'success'); await verHistorialProveedor(telefono); await cargarTodosProveedores(); } catch(e) { showNotification(e.message || 'Error al quitar producto', 'error'); } }
         
         function abrirModalVentaManual(cedula, nombre) { document.getElementById('ventaManualClienteCedula').value = cedula; document.getElementById('ventaManualClienteNombre').value = nombre; document.getElementById('modalVentaManualTitulo').textContent = `Venta Manual - ${nombre}`; document.getElementById('ventaManualFecha').value = new Date().toISOString().split('T')[0]; document.getElementById('ventaManualTotal').value = ''; document.getElementById('ventaManualAnticipo').value = '0'; document.getElementById('ventaManualDiasCredito').value = '30'; document.getElementById('ventaManualObservaciones').value = ''; document.getElementById('productosVentaManualContainer').innerHTML = `<div class="producto-item"><div style="display:flex;gap:10px;align-items:center"><div class="producto-input-container"><input type="text" class="producto-input" placeholder="Nombre del producto (opcional)" oninput="buscarProductosSugeridos(this)"><div class="sugerencias-productos"></div></div><input type="number" class="cantidad-input" placeholder="Cantidad" min="1" value="1"><button type="button" class="btn-eliminar-producto" onclick="eliminarProductoVentaManual(this)"><i class="fas fa-times"></i></button></div></div>`; cargarTodosProductos(); document.getElementById('modalVentaManual').style.display = 'flex'; }
         function cerrarModalVentaManual() { document.getElementById('modalVentaManual').style.display = 'none'; }
@@ -414,6 +537,7 @@
             document.querySelectorAll('.tab-historial-btn').forEach(b => b.addEventListener('click', () => activarTabHistorial(b.dataset.historialTab)));
             document.getElementById('btnNuevoCliente').addEventListener('click', nuevoCliente);
             document.getElementById('btnNuevoProveedor').addEventListener('click', nuevoProveedor);
+            inicializarSelectorProductosProveedor();
             document.getElementById('formProveedorCompleto').addEventListener('submit', e => { e.preventDefault(); guardarProveedorCompleto(); });
             document.getElementById('formVentaManual').addEventListener('submit', e => { e.preventDefault(); registrarVentaManual(); });
             document.getElementById('formAbono').addEventListener('submit', procesarAbono);

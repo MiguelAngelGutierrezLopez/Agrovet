@@ -868,10 +868,12 @@ def crear_proveedor_completo():
                 'message': 'Nombre del proveedor es requerido'
             }), 400
         
-        # Extraer productos si se proporcionaron
-        productos = data.get('productos', '')
-        
-        # Crear proveedor con productos
+        productos = data.get('productos', [])
+        if isinstance(productos, str):
+            productos = [productos]
+        if isinstance(productos, list) and productos and all(isinstance(item, str) for item in productos):
+            productos = [item.strip() for item in productos if item and item.strip()]
+
         success, message = ClienteProveedorModel.crear_proveedor_con_productos(
             telefono=data['telefono'],
             nombre_empresa=data['nombre_empresa'],
@@ -934,10 +936,12 @@ def actualizar_proveedor(telefono):
                 'message': 'Nombre del proveedor es requerido'
             }), 400
         
-        # Extraer productos si se proporcionaron
         productos = data.get('productos', None)
-        
-        # Actualizar proveedor con producto
+        if isinstance(productos, str):
+            productos = [productos]
+        if isinstance(productos, list) and productos and all(isinstance(item, str) for item in productos):
+            productos = [item.strip() for item in productos if item and item.strip()]
+
         success, message = ClienteProveedorModel.actualizar_proveedor(
             telefono_original=telefono,
             telefono=data['telefono'],
@@ -1049,17 +1053,19 @@ def obtener_productos_disponibles():
 
 @cliente_proveedor_bp.route('/proveedor/<telefono>/productos', methods=['GET'])
 def obtener_productos_proveedor(telefono):
-    """Obtener productos asignados a un proveedor"""
+    """Obtener productos asignados a un proveedor desde la tabla junction"""
     try:
         logger.info(f"Solicitando productos del proveedor: {telefono}")
         
         conn = db.get_connection()
         cursor = conn.cursor(dictionary=True)
         
+        # Usar tabla junction proveedor_productos para obtener los productos
         sql = """
         SELECT p.id, p.nombre, p.categoria, p.presentacion, p.precio_costo
         FROM productos p
-        WHERE p.proveedor = %s
+        INNER JOIN proveedor_productos pp ON p.id = pp.producto_id
+        WHERE pp.proveedor_telefono = %s
         ORDER BY p.nombre
         """
         
@@ -1096,19 +1102,15 @@ def asignar_productos_proveedor(telefono):
                 'success': False,
                 'message': 'No se recibieron datos JSON'
             }), 400
-            
+
         logger.info(f"Asignando productos al proveedor {telefono}: {data}")
-        
+
         ids_productos = data.get('productos_ids', [])
-        
-        if not ids_productos:
-            return jsonify({
-                'success': False,
-                'message': 'No se proporcionaron IDs de productos'
-            }), 400
-        
+        if ids_productos is None:
+            ids_productos = []
+
         success, message = ClienteProveedorModel.asignar_productos_a_proveedor(telefono, ids_productos)
-        
+
         if success:
             logger.info(f"Productos asignados exitosamente al proveedor {telefono}")
             return jsonify({
@@ -1121,12 +1123,73 @@ def asignar_productos_proveedor(telefono):
                 'success': False,
                 'message': message
             }), 400
-            
+
     except Exception as e:
         logger.error(f"Error al asignar productos: {str(e)}")
         return jsonify({
             'success': False,
             'message': f"Error al asignar productos: {str(e)}"
+        }), 500
+
+@cliente_proveedor_bp.route('/proveedor/<telefono>/productos/<int:producto_id>', methods=['DELETE'])
+def quitar_producto_proveedor(telefono, producto_id):
+    """Quitar un producto específico de un proveedor."""
+    try:
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT producto_id FROM proveedor_productos WHERE proveedor_telefono = %s AND producto_id <> %s",
+            (telefono, producto_id)
+        )
+        productos_ids = [row[0] for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+
+        success, message = ClienteProveedorModel.asignar_productos_a_proveedor(telefono, productos_ids)
+        return jsonify({'success': success, 'message': message}), 200 if success else 400
+    except Exception as e:
+        logger.error(f"Error al quitar producto {producto_id} del proveedor {telefono}: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error al quitar producto: {str(e)}'}), 500
+
+@cliente_proveedor_bp.route('/productos/catalogo', methods=['GET'])
+def obtener_catalogo_productos():
+    """Obtener catálogo de productos para elegir los que distribuye un proveedor."""
+    try:
+        telefono = request.args.get('telefono')
+        conn = db.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        sql = """
+            SELECT id, nombre, categoria, presentacion, precio_costo, proveedor
+            FROM productos
+            WHERE 1=1
+        """
+        params = []
+
+        if telefono:
+            sql += " AND (proveedor IS NULL OR proveedor = '' OR proveedor = %s)"
+            params.append(telefono)
+        else:
+            sql += " AND (proveedor IS NULL OR proveedor = '')"
+
+        sql += " ORDER BY categoria, nombre"
+
+        cursor.execute(sql, params)
+        productos = serializar_datos(cursor.fetchall())
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'productos': productos,
+            'total': len(productos)
+        })
+    except Exception as e:
+        logger.error(f"Error al obtener catálogo de productos: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f"Error al obtener catálogo de productos: {str(e)}",
+            'productos': []
         }), 500
 
 # ===== RUTA PARA LA VISTA PRINCIPAL =====

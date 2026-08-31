@@ -594,6 +594,112 @@
         }
         .modal-body { padding: 25px; }
         
+        /* ===== ESTILOS DEL MODAL DE DETALLE ===== */
+        .detalle-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 16px;
+            color: var(--teal);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gris-claro);
+        }
+        .detalle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .detalle-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .detalle-label {
+            font-size: 12px;
+            color: var(--gris-medio);
+            font-weight: 500;
+        }
+        .detalle-value {
+            font-size: 14px;
+            color: var(--gris-oscuro);
+            font-weight: 500;
+        }
+        .productos-detalle {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .productos-detalle th {
+            background: var(--gris-claro);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gris-oscuro);
+            font-size: 12px;
+        }
+        .productos-detalle td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--gris-claro);
+        }
+        .productos-detalle tr:last-child td {
+            border-bottom: none;
+        }
+        .total-section {
+            background: var(--blanco-hueso);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .total-label {
+            font-size: 16px;
+            color: var(--gris-oscuro);
+            font-weight: 600;
+            margin-right: 15px;
+        }
+        .total-valor {
+            font-size: 20px;
+            color: var(--teal);
+            font-weight: bold;
+        }
+        .porcentajes-utilidad {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--blanco-hueso);
+            border-radius: 6px;
+        }
+        .porcentaje-item {
+            text-align: center;
+            padding: 8px;
+            border-radius: 4px;
+            background: white;
+        }
+        .porcentaje-label {
+            font-size: 11px;
+            color: var(--gris-medio);
+            margin-bottom: 4px;
+        }
+        .porcentaje-valor {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--teal);
+        }
+        .porcentaje-valor.margen {
+            color: var(--turquesa);
+        }
+        .porcentaje-valor.rentabilidad {
+            color: var(--exito);
+        }
+        
         /* ===== ESTADOS ===== */
         .mensaje-error, .mensaje-exito {
             padding: 12px 18px;
@@ -1233,7 +1339,7 @@
     }
 
     // ============================================================
-    //  GRÁFICO - CORREGIDO
+    //  GRÁFICO
     // ============================================================
     const Grafico = {
         instance: null,
@@ -1245,9 +1351,6 @@
             }
         },
 
-        // ============================================================
-        //  CORRECCIÓN: Construir tendencia desde ventas
-        // ============================================================
         construirDesdeVentas(ventas) {
             if (!ventas || ventas.length === 0) return [];
             
@@ -1267,7 +1370,6 @@
                 return new Date(a.fecha_dia) - new Date(b.fecha_dia);
             });
             
-            // Si hay un solo día, agregar día anterior con valor 0 para que se vea algo
             if (result.length === 1) {
                 const fecha = new Date(result[0].fecha_dia);
                 const diaAnterior = new Date(fecha);
@@ -1282,9 +1384,6 @@
             return result;
         },
 
-        // ============================================================
-        //  CORRECCIÓN: Crear gráfico con datos
-        // ============================================================
         crear(datos) {
             const canvas = document.getElementById('chartTendencia');
             if (!canvas) return;
@@ -1293,7 +1392,6 @@
             
             let tendencia = [];
             
-            // Determinar la fuente de datos
             if (Array.isArray(datos)) {
                 tendencia = datos;
             } else if (datos && datos.tendencia_ventas) {
@@ -1303,11 +1401,9 @@
             } else if (datos && datos.tendencia) {
                 tendencia = datos.tendencia;
             } else {
-                // Fallback: intentar construir desde ventas actuales
                 tendencia = this.construirDesdeVentas(AppState.ventasActuales);
             }
             
-            // Si no hay datos, mostrar mensaje
             if (!tendencia || tendencia.length === 0) {
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1333,7 +1429,6 @@
                 return isNaN(valor) ? 0 : valor;
             });
             
-            // Actualizar etiqueta del período
             const labelPeriodo = document.getElementById('graficoPeriodo');
             if (tendencia.length > 0) {
                 const first = tendencia[0].fecha_dia || '';
@@ -1454,7 +1549,6 @@
             </div>
         `;
         
-        // Actualizar header
         document.getElementById('totalVentasPeriodo').textContent = e.total_ventas || 0;
         document.getElementById('ingresosCobradosHeader').textContent = formatCurrency(ingresosCobrados);
         document.getElementById('utilidadRealizadaHeader').textContent = formatCurrency(e.utilidad_realizada || 0);
@@ -1608,9 +1702,6 @@
                 AppState.ventasActuales = data.ventas || [];
                 AppState.estadisticas = data.estadisticas_financieras || null;
                 
-                // ============================================================
-                //  CORRECCIÓN: Actualizar gráfico con tendencia o desde ventas
-                // ============================================================
                 if (data.tendencia_ventas && data.tendencia_ventas.length > 0) {
                     Grafico.actualizar(data.tendencia_ventas);
                 } else if (AppState.ventasActuales.length > 0) {
@@ -1660,7 +1751,6 @@
             AppState.periodoActual = 'personalizado';
             AppState.currentPage = 1;
             
-            // Limpiar caché para forzar actualización
             AppState.cache.clear();
             
             const [ventasData, statsData] = await Promise.all([
@@ -1676,9 +1766,6 @@
                 AppState.estadisticas = statsData.estadisticas || null;
             }
             
-            // ============================================================
-            //  CORRECCIÓN: Actualizar gráfico con los datos filtrados
-            // ============================================================
             if (AppState.ventasActuales.length > 0) {
                 Grafico.actualizar({ ventas: AppState.ventasActuales });
             } else {
@@ -1733,7 +1820,7 @@
     }
 
     // ============================================================
-    //  DETALLE Y ELIMINACIÓN
+    //  DETALLE Y ELIMINACIÓN (VERSIÓN MEJORADA)
     // ============================================================
     async function verDetalle(id) {
         try {
@@ -1743,23 +1830,170 @@
             if (data.success && data.venta) {
                 const v = data.venta;
                 const total = v.total || 0;
+                const subtotal = v.subtotal || total;
+                const descuento = v.descuento || 0;
+                const utilidadTotal = v.utilidad || 0;
+                const utilidadRealizada = v.utilidad_realizada || 0;
+                const utilidadProyectada = v.utilidad_proyectada || 0;
+                const costoTotal = v.costo_total || (total - utilidadTotal);
                 
-                document.getElementById('modalDetalleBody').innerHTML = `
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
-                        <div><strong>Número:</strong> #${v.numero_venta || v.id}</div>
-                        <div><strong>Fecha:</strong> ${formatDateTime(v.fecha_dia, v.fecha_hora)}</div>
-                        <div><strong>Cliente:</strong> ${v.nombre_cliente || 'CLIENTE FINAL'}</div>
-                        <div><strong>Teléfono:</strong> ${v.telefono_cliente || 'No registrado'}</div>
-                        <div><strong>Tipo Pago:</strong> <span class="pago-badge ${getPagoBadge(v.tipo_pago)}">${v.tipo_pago || 'N/A'}</span></div>
-                        <div><strong>Total:</strong> <strong style="color:var(--teal);">${formatCurrency(total)}</strong></div>
+                // Calcular porcentajes
+                let margenVenta = 0;
+                let rentabilidadCosto = 0;
+                if (total > 0 && costoTotal > 0) {
+                    margenVenta = ((total - costoTotal) / total) * 100;
+                    rentabilidadCosto = ((total - costoTotal) / costoTotal) * 100;
+                }
+                
+                const esCredito = (v.tipo_pago || '').toUpperCase() === 'CRÉDITO';
+                const creditoPagado = v.estado_credito === 'pagado';
+                const esMixta = v.es_mixta || false;
+                const fechaHora = v.fecha_completa || formatDateTime(v.fecha_dia, v.fecha_hora);
+                
+                let infoCreditoHtml = '';
+                if (esCredito && v.credito) {
+                    const credito = v.credito;
+                    const totalPagado = (credito.anticipo || 0) + (credito.abonos_realizados || 0);
+                    const saldoPendiente = credito.saldo_pendiente || 0;
+                    
+                    infoCreditoHtml = `
+                        <div class="detalle-section">
+                            <h3 class="section-title"><i class="fas fa-credit-card"></i> Información del Crédito</h3>
+                            <div class="detalle-grid">
+                                <div class="detalle-item"><div class="detalle-label">Estado</div><div class="detalle-value" style="color:${credito.estado === 'pendiente' ? '#f39c12' : credito.estado === 'pagado' ? '#27ae60' : '#e74c3c'}">${credito.estado || 'pendiente'}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Deuda Inicial</div><div class="detalle-value">${formatCurrency(credito.deuda_inicial)}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Anticipo</div><div class="detalle-value" style="color:var(--exito);">${formatCurrency(credito.anticipo)}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Abonos Realizados</div><div class="detalle-value" style="color:var(--exito);">${formatCurrency(credito.abonos_realizados)}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Total Pagado</div><div class="detalle-value" style="color:var(--exito);">${formatCurrency(totalPagado)}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Saldo Pendiente</div><div class="detalle-value" style="color:${saldoPendiente > 0 ? 'var(--error)' : 'var(--exito)'}; font-weight:bold;">${formatCurrency(saldoPendiente)}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Fecha Inicio</div><div class="detalle-value">${credito.fecha_inicio || 'No especificada'}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Fecha Vencimiento</div><div class="detalle-value">${credito.fecha_vencimiento || 'No especificada'}</div></div>
+                                <div class="detalle-item"><div class="detalle-label">Días de Crédito</div><div class="detalle-value">${credito.dias_credito || 0} días</div></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Construir contenido del modal
+                let html = `
+                    <div class="detalle-section">
+                        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información de la Venta</h3>
+                        <div class="detalle-grid">
+                            <div class="detalle-item"><div class="detalle-label">ID de Venta</div><div class="detalle-value">#${v.numero_venta || v.id.toString().padStart(6, '0')}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Fecha y Hora</div><div class="detalle-value">${fechaHora}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Método de Pago</div><div class="detalle-value"><span class="pago-badge ${getPagoBadge(v.tipo_pago)}"><i class="fas ${getPagoIcon(v.tipo_pago)}"></i> ${v.tipo_pago || 'No especificado'}${esMixta ? ' (MIXTA)' : ''}</span></div></div>
+                            ${esCredito ? `<div class="detalle-item"><div class="detalle-label">Estado Crédito</div><div class="detalle-value" style="color:${creditoPagado ? 'var(--exito)' : 'var(--advertencia)'};"><i class="fas ${creditoPagado ? 'fa-check-circle' : 'fa-clock'}"></i> ${creditoPagado ? 'Crédito Pagado' : 'Crédito Pendiente'}</div></div>` : ''}
+                        </div>
                     </div>
-                    <h4 style="margin:15px 0 10px; color:var(--teal);"><i class="fas fa-boxes"></i> Productos</h4>
-                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                        <thead><tr style="background:var(--gris-claro);"><th style="padding:8px 10px;text-align:left;">Producto</th><th style="padding:8px 10px;text-align:center;">Cantidad</th><th style="padding:8px 10px;text-align:right;">Precio</th><th style="padding:8px 10px;text-align:right;">Subtotal</th></tr></thead>
-                        <tbody>${(v.productos || []).map(p => `<tr><td style="padding:8px 10px;">${p.nombre || 'Producto'}</td><td style="padding:8px 10px;text-align:center;">${p.cantidad || 0}</td><td style="padding:8px 10px;text-align:right;">${formatCurrency(p.precio_unitario || 0)}</td><td style="padding:8px 10px;text-align:right;">${formatCurrency((p.precio_unitario || 0) * (p.cantidad || 0))}</td></tr>`).join('')}</tbody>
-                        <tfoot><tr style="border-top:2px solid var(--teal);font-weight:bold;"><td colspan="3" style="padding:10px;text-align:right;">TOTAL:</td><td style="padding:10px;text-align:right;color:var(--teal);font-size:16px;">${formatCurrency(total)}</td></tr></tfoot>
-                    </table>
+                    
+                    <div class="detalle-section">
+                        <h3 class="section-title"><i class="fas fa-user"></i> Información del Cliente</h3>
+                        <div class="detalle-grid">
+                            <div class="detalle-item"><div class="detalle-label">Nombre</div><div class="detalle-value">${v.nombre_cliente || 'CLIENTE FINAL'}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Tipo</div><div class="detalle-value">Cliente</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Cédula/NIT</div><div class="detalle-value">${v.cliente_cedula || 'No registrado'}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Teléfono</div><div class="detalle-value">${v.telefono_cliente || 'No registrado'}</div></div>
+                            <div class="detalle-item" style="grid-column: 1 / -1;"><div class="detalle-label">Dirección</div><div class="detalle-value">${v.direccion_cliente || v.cliente_direccion_completa || 'No registrada'}</div></div>
+                        </div>
+                    </div>
+                    
+                    ${infoCreditoHtml}
+                    
+                    <div class="detalle-section">
+                        <h3 class="section-title"><i class="fas fa-boxes"></i> Productos Vendidos</h3>
+                        <table class="productos-detalle">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Costo Unitario</th>
+                                    <th>Utilidad</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(v.productos || []).map(p => {
+                                    const precioUnitario = parseFloat(p.precio_unitario || 0);
+                                    const precioCosto = parseFloat(p.precio_costo || 0);
+                                    const cantidad = parseInt(p.cantidad || 0);
+                                    const utilidadProducto = (precioUnitario - precioCosto) * cantidad;
+                                    const subtotalProducto = precioUnitario * cantidad;
+                                    const margenProd = precioUnitario > 0 ? ((precioUnitario - precioCosto) / precioUnitario * 100) : 0;
+                                    return `
+                                        <tr>
+                                            <td><strong>${p.nombre || 'Producto'}</strong></td>
+                                            <td>${p.categoria || ''}</td>
+                                            <td>${cantidad}</td>
+                                            <td>${formatCurrency(precioUnitario)}</td>
+                                            <td>${formatCurrency(precioCosto)}</td>
+                                            <td style="color:${utilidadProducto >= 0 ? 'var(--exito)' : 'var(--error)'}; font-weight:bold;">${formatCurrency(utilidadProducto)}</td>
+                                            <td>${formatCurrency(subtotalProducto)}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="detalle-section">
+                        <h3 class="section-title"><i class="fas fa-calculator"></i> Resumen Financiero</h3>
+                        <div class="detalle-grid">
+                            <div class="detalle-item"><div class="detalle-label">Subtotal</div><div class="detalle-value">${formatCurrency(subtotal)}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Descuento</div><div class="detalle-value">${formatCurrency(descuento)}</div></div>
+                        </div>
+                        <div class="total-section">
+                            <div class="total-label">TOTAL VENTA</div>
+                            <div class="total-valor">${formatCurrency(total)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="detalle-section">
+                        <h3 class="section-title"><i class="fas fa-money-bill-wave"></i> Análisis de Utilidad</h3>
+                        <div class="detalle-grid">
+                            <div class="detalle-item"><div class="detalle-label">Ingresos (Venta)</div><div class="detalle-value" style="color:var(--exito);">${formatCurrency(total)}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Costos Totales</div><div class="detalle-value" style="color:var(--error);">${formatCurrency(costoTotal)}</div></div>
+                            <div class="detalle-item"><div class="detalle-label">Utilidad Total</div><div class="detalle-value" style="color:var(--turquesa); font-weight:bold;">${formatCurrency(utilidadTotal)}</div></div>
+                            ${esCredito ? `
+                            <div class="detalle-item"><div class="detalle-label">Utilidad ${creditoPagado ? 'Realizada' : 'Proyectada'}</div><div class="detalle-value" style="color:${creditoPagado ? 'var(--exito)' : 'var(--advertencia)'};">${formatCurrency(creditoPagado ? utilidadRealizada : utilidadProyectada)}<br><small style="font-size:11px;">${creditoPagado ? '(Ganancia real y segura)' : '(Ganancia esperada, no es real todavía)'}</small></div></div>
+                            ` : `
+                            <div class="detalle-item"><div class="detalle-label">Utilidad Realizada</div><div class="detalle-value" style="color:var(--exito);">${formatCurrency(utilidadRealizada)}<br><small style="font-size:11px;">(Ganancia real y segura)</small></div></div>
+                            `}
+                        </div>
+                        
+                        <div class="porcentajes-utilidad">
+                            <div class="porcentaje-item">
+                                <div class="porcentaje-label">Margen sobre Venta</div>
+                                <div class="porcentaje-valor margen">${margenVenta.toFixed(1)}%</div>
+                                <small style="color:var(--gris-medio); font-size:10px;">(Utilidad / Venta) × 100</small>
+                            </div>
+                            <div class="porcentaje-item">
+                                <div class="porcentaje-label">Rentabilidad sobre Costo</div>
+                                <div class="porcentaje-valor rentabilidad">${rentabilidadCosto.toFixed(1)}%</div>
+                                <small style="color:var(--gris-medio); font-size:10px;">(Utilidad / Costo) × 100</small>
+                            </div>
+                        </div>
+                        
+                        <div class="detalle-item" style="margin-top:20px;">
+                            <div class="detalle-label">Margen de Utilidad</div>
+                            <div class="detalle-value">
+                                <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
+                                    <div style="flex:1; background:var(--gris-claro); height:10px; border-radius:5px; overflow:hidden;">
+                                        <div style="background:linear-gradient(90deg, var(--error) 0%, var(--turquesa) 100%); width:${Math.min(margenVenta, 100)}%; height:100%;"></div>
+                                    </div>
+                                    <small style="color:var(--gris-medio); min-width:80px; text-align:right;">${margenVenta.toFixed(1)}% de ganancia</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:30px; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="imprimirFacturaHTML(${v.id})"><i class="fas fa-print"></i> Imprimir Factura</button>
+                    </div>
                 `;
+                
+                document.getElementById('modalDetalleBody').innerHTML = html;
                 document.getElementById('modalDetalle').style.display = 'flex';
             } else {
                 mostrarError(data.error || 'Error al cargar detalle');
@@ -1770,6 +2004,12 @@
         } finally {
             mostrarCargando(false);
         }
+    }
+
+    // Función global para imprimir factura
+    function imprimirFacturaHTML(ventaId) {
+        window.open(`/api/ventas/${ventaId}/factura-pdf`, '_blank');
+        mostrarExito('Generando factura... Se abrirá en nueva ventana.');
     }
 
     function cerrarModal() {
@@ -2094,7 +2334,6 @@
                 AppState.currentPage = 1;
                 AppState.cache.clear();
                 
-                // Resetear filtros visuales
                 document.getElementById('filterTipoPago').value = '';
                 document.getElementById('filterUsuario').value = '';
                 document.getElementById('filterProducto').value = '';
@@ -2127,11 +2366,9 @@
             const horaInicio = document.getElementById('horaInicio').value;
             const horaFin = document.getElementById('horaFin').value;
             
-            // Si hay algún filtro aplicado, ejecutar búsqueda
             if (tipoPago || usuario || producto || fechaInicio || fechaFin || horaInicio || horaFin) {
                 aplicarFiltros();
             } else {
-                // Si no hay filtros, recargar el período actual
                 cargarDatos();
             }
         }, CONFIG.debounceDelay);

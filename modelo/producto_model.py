@@ -2,6 +2,32 @@ from database import db
 
 class ProductoModel:
     @staticmethod
+    def _sincronizar_proveedor_producto(cursor, producto_id, proveedor_telefono, proveedor_anterior=None):
+        """Mantiene consistentes el FK del producto, la junction y el resumen del proveedor."""
+        proveedor_telefono = (proveedor_telefono or '').strip() or None
+        proveedores_afectados = {proveedor_anterior, proveedor_telefono} - {None}
+
+        cursor.execute(
+            "DELETE FROM proveedor_productos WHERE producto_id = %s",
+            (producto_id,)
+        )
+        if proveedor_telefono:
+            cursor.execute(
+                "INSERT INTO proveedor_productos (proveedor_telefono, producto_id) VALUES (%s, %s)",
+                (proveedor_telefono, producto_id)
+            )
+
+        for telefono in proveedores_afectados:
+            cursor.execute(
+                """UPDATE proveedor SET producto = (
+                    SELECT GROUP_CONCAT(p.nombre ORDER BY p.nombre SEPARATOR ', ')
+                    FROM productos p
+                    WHERE p.proveedor = proveedor.telefono
+                ) WHERE telefono = %s""",
+                (telefono,)
+            )
+
+    @staticmethod
     def obtener_todos_productos(filtros=None):
         """Obtener todos los productos con filtros opcionales"""
         conn = None
@@ -11,7 +37,10 @@ class ProductoModel:
             cursor = conn.cursor(dictionary=True)
             
             sql = """
-            SELECT p.*, pr.nombre_proveedor
+              SELECT p.*, pr.nombre_proveedor, pr.nombre_empresa,
+                    CASE WHEN pr.telefono IS NULL THEN ''
+                        ELSE CONCAT(pr.nombre_proveedor, ' de ', pr.nombre_empresa)
+                    END AS proveedor_nombre_completo
             FROM productos p
             LEFT JOIN proveedor pr ON p.proveedor = pr.telefono
             WHERE 1=1
@@ -110,7 +139,10 @@ class ProductoModel:
             cursor = conn.cursor(dictionary=True)
             
             sql = """
-            SELECT p.*, pr.nombre_proveedor
+              SELECT p.*, pr.nombre_proveedor, pr.nombre_empresa,
+                    CASE WHEN pr.telefono IS NULL THEN ''
+                        ELSE CONCAT(pr.nombre_proveedor, ' de ', pr.nombre_empresa)
+                    END AS proveedor_nombre_completo
             FROM productos p
             LEFT JOIN proveedor pr ON p.proveedor = pr.telefono
             WHERE p.id = %s
@@ -158,6 +190,9 @@ class ProductoModel:
             ))
             
             producto_id = cursor.lastrowid
+            ProductoModel._sincronizar_proveedor_producto(
+                cursor, producto_id, datos_producto.get('proveedor')
+            )
             conn.commit()
             
             return {
@@ -187,6 +222,11 @@ class ProductoModel:
         try:
             conn = db.get_connection()
             cursor = conn.cursor(dictionary=True)
+
+            cursor.execute("SELECT proveedor FROM productos WHERE id = %s", (producto_id,))
+            producto_existente = cursor.fetchone()
+            if not producto_existente:
+                return {'success': False, 'error': 'Producto no encontrado'}
             
             sql = """
             UPDATE productos 
@@ -201,6 +241,7 @@ class ProductoModel:
             WHERE id = %s
             """
             
+            proveedor_anterior = producto_existente.get('proveedor')
             cursor.execute(sql, (
                 datos_producto['nombre'],
                 datos_producto.get('descripcion'),
@@ -212,6 +253,10 @@ class ProductoModel:
                 datos_producto.get('precio_venta', 0),
                 producto_id
             ))
+
+            ProductoModel._sincronizar_proveedor_producto(
+                cursor, producto_id, datos_producto.get('proveedor'), proveedor_anterior
+            )
             
             conn.commit()
             
@@ -334,7 +379,7 @@ class ProductoModel:
             conn = db.get_connection()
             cursor = conn.cursor(dictionary=True)
             
-            sql = "SELECT telefono, nombre_proveedor FROM proveedor ORDER BY nombre_proveedor"
+            sql = "SELECT telefono, nombre_proveedor, nombre_empresa FROM proveedor ORDER BY nombre_proveedor"
             cursor.execute(sql)
             proveedores = cursor.fetchall()
             
