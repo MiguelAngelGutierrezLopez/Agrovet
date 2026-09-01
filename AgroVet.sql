@@ -114,6 +114,24 @@ CREATE TABLE IF NOT EXISTS `proveedor` (
 
 -- Volcando datos para la tabla agrovet.proveedor: ~1 rows (aproximadamente)
 
+CREATE TABLE IF NOT EXISTS `compras_proveedor` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `proveedor_telefono` varchar(15) COLLATE utf8mb4_general_ci NOT NULL,
+  `producto_id` INT NOT NULL,
+  `fecha_compra` date NOT NULL,
+  `cantidad` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `precio_costo_unitario` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `precio_venta_unitario` decimal(12,2) DEFAULT '0.00',
+  `total_compra` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `observaciones` text COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_proveedor_fecha` (`proveedor_telefono`,`fecha_compra`),
+  KEY `idx_producto` (`producto_id`),
+  CONSTRAINT `compras_proveedor_ibfk_1` FOREIGN KEY (`proveedor_telefono`) REFERENCES `proveedor` (`telefono`) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT `compras_proveedor_ibfk_2` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Volcando estructura para tabla agrovet.reporte_caja
 CREATE TABLE IF NOT EXISTS `reporte_caja` (
   `id` int NOT NULL AUTO_INCREMENT,

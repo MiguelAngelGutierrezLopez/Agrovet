@@ -71,16 +71,18 @@
             background: rgba(0,0,0,0.1);
         }
         
-        .sidebar.collapsed .sidebar-header h3,
+        .sidebar.collapsed .sidebar-header img,
         .sidebar.collapsed .sidebar-header small {
             display: none;
         }
         
-        .sidebar-header h3 {
-            color: var(--mostaza);
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 1px;
+        .sidebar-header img {
+            display: block;
+            width: 170px;
+            max-height: 62px;
+            object-fit: contain;
+            margin: 0 auto 6px;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));
         }
         
         .sidebar-header small {
@@ -793,7 +795,7 @@
     <!-- SIDEMENU con colores teal/terracota -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h3>AGROVET</h3>
+            <img src="/imagenes/Logo.png" alt="AgroVet" style="width: 150px; max-height: 52px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));">
             <small>Yacuanquer</small>
         </div>
         <ul class="sidebar-menu">
@@ -815,7 +817,7 @@
     <div class="main-content" id="mainContent">
         <div class="main-header">
             <div class="logo">
-                <h1>AGRO<span>VET</span></h1>
+                <img src="/imagenes/Logo.png" alt="AgroVet" style="max-height: 62px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));">
                 <small>Yacuanquer - Gestión de Clientes</small>
             </div>
             <button id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>

@@ -168,6 +168,7 @@ def obtener_ruta_html(nombre_archivo, directorio_preferido='vista'):
         'detalle_venta.html': 'detalle_venta.html',
         'historial_venta.html': 'historial_venta.html',
         'reporte_caja.html': 'reporte_caja.html',
+        'declaracion_renta.html': 'declaracion_renta.html',
         'clientes_proveedores.html': 'usuarios.html'
     }
     
@@ -310,6 +311,11 @@ def reporte_caja():
     """Página de reporte de caja"""
     return servir_html('reporte_caja.html', 'vista')
 
+@app.route('/declaracion_renta')
+def declaracion_renta():
+    """Página del módulo de declaración de renta"""
+    return servir_html('declaracion_renta.html', 'vista')
+
 @app.route('/usuarios')
 def usuarios():
     """Página de gestión de usuarios (clientes/proveedores)"""
@@ -341,24 +347,36 @@ def auxiliar_cliente():
 
 @app.route('/favicon.ico')
 def favicon():
-    """Servir favicon"""
+    """Servir favicon usando el logo del sistema"""
     try:
+        logo_path = os.path.join(obtener_base_path(), 'imagenes', 'Logo.png')
+        if os.path.exists(logo_path):
+            return send_file(logo_path, mimetype='image/png')
+
         base_path = obtener_base_path()
         favicon_paths = [
             os.path.join(base_path, 'static', 'favicon.ico'),
             os.path.join(base_path, 'favicon.ico'),
             os.path.join(base_path, 'vista', 'favicon.ico')
         ]
-        
+
         for path in favicon_paths:
             if os.path.exists(path):
                 return send_file(path, mimetype='image/vnd.microsoft.icon')
-        
-        # Si no hay favicon, devolver 404 silencioso
+
         return '', 204
     except Exception as e:
         logger.error(f"Error con favicon: {e}")
         return '', 204
+
+@app.route('/imagenes/<path:filename>')
+def serve_imagenes(filename):
+    """Servir archivos de la carpeta imagenes"""
+    base_path = obtener_base_path()
+    imagenes_dir = os.path.join(base_path, 'imagenes')
+    if os.path.exists(os.path.join(imagenes_dir, filename)):
+        return send_from_directory(imagenes_dir, filename)
+    return 'Archivo no encontrado', 404
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):

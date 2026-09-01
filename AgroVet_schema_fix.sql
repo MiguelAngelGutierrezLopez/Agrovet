@@ -19,6 +19,8 @@ WHERE p.producto IS NOT NULL OR prod.proveedor = p.telefono;
 -- Si quieres mantenerlo, simplemente no lo elimines
 -- El código puede actualizar este campo manualmente cuando se asignen productos
 
+
+
 -- 4. ACTUALIZAR TABLA productos - MANTENER O REMOVER 'proveedor'
 -- OPCIÓN A: Mantener como FK al proveedor PRINCIPAL (denormalización)
 -- En este caso, el campo 'proveedor' sigue siendo válido

@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declaración de Renta - AgroVet</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== VARIABLES DE COLOR ===== */
+        :root {
+            --teal: #1F8A86;
+            --terracota: #C08A67;
+            --mostaza: #D9C357;
+            --turquesa: #3FA6A0;
+            --celeste-fondo: #E3F0F3;
+            --blanco-hueso: #F7F7F4;
+            --verde-oliva: #B7C3A1;
+            --rojo-rosado: #D44A5E;
+            --gris-oscuro: #2c3e50;
+            --gris-medio: #7f8c8d;
+            --gris-claro: #ecf0f1;
+            --exito: #27ae60;
+            --error: #e74c3c;
+            --advertencia: #f39c12;
+            --azul-mix: #3498db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--blanco-hueso);
+            color: var(--gris-oscuro);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 250px;
+            background: var(--teal);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            left: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .logo-container {
+            text-align: center;
+            padding: 20px 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .logo img {
+            width: 170px;
+            max-height: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));
+        }
+
+        .logo-agro {
+            color: white;
+        }
+        .logo-vet {
+            color: var(--mostaza);
+        }
+        .slogan {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 5px;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar.collapsed .slogan {
+            opacity: 0;
+        }
+
+        .nav-menu {
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 3px solid var(--mostaza);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 50%;
+            right: -15px;
+            background: var(--mostaza);
+            color: var(--gris-oscuro);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .toggle-sidebar-btn:hover {
+            background: var(--terracota);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .toggle-sidebar-btn.collapsed {
+            right: -40px;
+            background: var(--teal);
+            color: white;
+        }
+
+        .toggle-sidebar-collapsed {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--teal);
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-sidebar-collapsed:hover {
+            background: var(--mostaza);
+            color: var(--gris-oscuro);
+            transform: scale(1.1);
+        }
+
+        /* ===== CONTENIDO PRINCIPAL ===== */
+        .main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .top-header {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin: 15px 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--terracota);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left h1 {
+            color: var(--teal);
+            font-size: 24px;
+            margin-bottom: 3px;
+        }
+
+        .header-left p {
+            color: var(--gris-medio);
+            font-size: 13px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== CONTENEDOR PRINCIPAL ===== */
+        .content-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 22px;
+            margin: 0 25px 25px 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* ===== FILTROS ===== */
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gris-oscuro);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        .form-group .quick-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .form-group .quick-filters .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 4px;
+            border: 1px solid var(--gris-claro);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .form-group .quick-filters .btn-sm:hover {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--teal);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1a7572;
+            box-shadow: 0 4px 8px rgba(31, 138, 134, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--gris-claro);
+            color: var(--gris-oscuro);
+        }
+        .btn-secondary:hover {
+            background: var(--gris-medio);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--exito);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #219a52;
+        }
+
+        .btn-warning {
+            background: var(--advertencia);
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #d98c0c;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* ===== TARJETAS DE ESTADÍSTICAS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #fff, #f8fbfb);
+            border: 1px solid #eaf0f1;
+            border-radius: 10px;
+            padding: 16px 18px;
+            min-height: 100px;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-label {
+            color: var(--gris-medio);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            margin-top: 12px;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        .stat-foot {
+            margin-top: 8px;
+            color: var(--gris-medio);
+            font-size: 12px;
+        }
+
+        /* ===== ANÁLISIS COMPARATIVO ===== */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 18px 0 22px;
+        }
+
+        .analysis-card {
+            background: linear-gradient(135deg, #fff, #f6fafb);
+            border: 1px solid #e7edf0;
+            border-radius: 10px;
+            padding: 16px 18px;
+            transition: transform 0.2s;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .analysis-card .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--gris-medio);
+        }
+
+        .analysis-card .value {
+            margin-top: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gris-oscuro);
+        }
+
+        .analysis-card .delta {
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .delta.positive {
+            color: var(--exito);
+        }
+        .delta.negative {
+            color: var(--error);
+        }
+        .delta.neutral {
+            color: var(--gris-medio);
+        }
+
+        /* ===== GRÁFICOS ===== */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 18px;
+            margin: 24px 0;
+        }
+
+        .chart-panel {
+            background: #fff;
+            border: 1px solid #edf1f2;
+            border-radius: 12px;
+            padding: 18px;
+            min-height: 340px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
+
+        .chart-panel h4 {
+            margin-bottom: 12px;
+            font-size: 15px;
+            color: var(--gris-oscuro);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-panel h4 i {
+            color: var(--teal);
+        }
+
+        .chart-panel canvas {
+            width: 100% !important;
+            height: 280px !important;
+        }
+
+        .chart-panel .chart-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 280px;
+            color: var(--gris-medio);
+        }
+
+        /* ===== SECCIÓN SECUNDARIA ===== */
+        .secondary-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+            margin-top: 22px;
+        }
+
+        .panel-box {
+            background: var(--blanco-hueso);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #eaf0f1;
+        }
+
+        .panel-box h3 {
+            margin: 0 0 16px 0;
+            font-size: 1rem;
+            color: var(--gris-oscuro);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-box h3 i {
+            color: var(--teal);
+        }
+
+        .top-providers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .provider-bar-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 12px;
+            background: var(--gris-claro);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--teal), var(--turquesa));
+            transition: width 0.6s ease;
+        }
+
+        .month-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .month-row {
+            display: grid;
+            grid-template-columns: 50px 1fr 70px;
+            gap: 8px;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .month-row .bar-track {
+            height: 10px;
+        }
+
+        .muted {
+            color: var(--gris-medio);
+        }
+
+        /* ===== TABLA ===== */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 22px;
+        }
+
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-toolbar .table-info {
+            font-size: 13px;
+            color: var(--gris-medio);
+        }
+
+        .table-toolbar .table-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #edf0f2;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f9f9f9;
+            color: var(--gris-oscuro);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: var(--celeste-fondo);
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .status-activo {
+            background: rgba(39, 174, 96, 0.12);
+            color: var(--exito);
+        }
+
+        .status-inactivo {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--error);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-backdrop.visible {
+            display: flex;
+        }
+
+        .modal {
+            width: min(800px, 100%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            overflow: hidden;
+            max-height: 90vh;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid #edf0f2;
+            background: #f8fbfb;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--teal);
+        }
+
+        .close-btn {
+            border: none;
+            background: transparent;
+            font-size: 28px;
+            color: var(--gris-medio);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--error);
+        }
+
+        .modal-body {
+            padding: 22px;
+            max-height: calc(90vh - 80px);
+            overflow-y: auto;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .detail-box {
+            background: var(--blanco-hueso);
+            border: 1px solid #e8eef0;
+            border-radius: 8px;
+            padding: 12px 14px;
+        }
+
+        .detail-box strong {
+            display: block;
+            font-size: 11px;
+            color: var(--gris-medio);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .detail-box span {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .mini-table th,
+        .mini-table td {
+            border-bottom: 1px solid #edf0f2;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .mini-table th {
+            background: #f5f7f8;
+            font-weight: 600;
+        }
+
+        /* ===== NOTIFICACIONES ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .notification.success {
+            background: var(--exito);
+            color: white;
+        }
+        .notification.error {
+            background: var(--error);
+            color: white;
+        }
+        .notification.info {
+            background: var(--turquesa);
+            color: white;
+        }
+        .notification.warning {
+            background: var(--advertencia);
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            text-align: center;
+        }
+
+        .loading-spinner i {
+            font-size: 48px;
+            color: var(--teal);
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-spinner p {
+            margin-top: 12px;
+            color: var(--gris-medio);
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .sidebar:not(.collapsed) {
+                width: 70px;
+            }
+            .sidebar:not(.collapsed) .nav-text,
+            .sidebar:not(.collapsed) .slogan {
+                display: none;
+            }
+            .main-content {
+                margin-left: 70px;
+            }
+            .main-content.expanded {
+                margin-left: 0;
+            }
+            .toggle-sidebar-btn {
+                right: -10px;
+            }
+            .secondary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-header {
+                flex-direction: column;
+                text-align: center;
+                margin: 15px;
+            }
+            .content-panel {
+                padding: 15px;
+                margin: 0 15px 15px 15px;
+            }
+            .filters {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .toggle-sidebar-collapsed {
+                top: 10px;
+                left: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            .analysis-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            .provider-bar-row {
+                grid-template-columns: 1fr 1fr;
+                font-size: 12px;
+            }
+            .month-row {
+                grid-template-columns: 40px 1fr 60px;
+                font-size: 11px;
+            }
+            .modal-body {
+                padding: 15px;
+            }
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .table-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        /* ===== UTILIDADES ===== */
+        .text-center {
+            text-align: center;
+        }
+        .py-4 {
+            padding-top: 24px;
+            padding-bottom: 24px;
+        }
+        .mt-2 {
+            margin-top: 8px;
+        }
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-2 {
+            gap: 8px;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-success {
+            color: var(--exito);
+        }
+        .text-danger {
+            color: var(--error);
+        }
+        .text-warning {
+            color: var(--advertencia);
+        }
+        .text-teal {
+            color: var(--teal);
+        }
+        .fw-bold {
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner"></i>
+            <p>Cargando datos...</p>
+        </div>
+    </div>
+
+    <!-- BOTÓN FLOTANTE PARA SIDEBAR OCULTO -->
+    <button class="toggle-sidebar-collapsed" id="toggleSidebarCollapsed" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <button class="toggle-sidebar-btn" id="toggleSidebar" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="logo-container">
+            <div class="logo">
+                <img src="/imagenes/Logo.png" alt="AgroVet" style="width: 170px; max-height: 60px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));">
+            </div>
+            <div class="slogan">Yacuanquer - Sistema POS</div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/inicio" class="nav-item">
+                <i class="nav-icon fas fa-home"></i>
+                <span class="nav-text">Inicio</span>
+            </a>
+            <a href="/venta" class="nav-item">
+                <i class="nav-icon fas fa-cash-register"></i>
+                <span class="nav-text">Nueva Venta</span>
+            </a>
+            <a href="/productos" class="nav-item">
+                <i class="nav-icon fas fa-boxes"></i>
+                <span class="nav-text">Productos</span>
+            </a>
+            <a href="/usuarios" class="nav-item">
+                <i class="nav-icon fas fa-users"></i>
+                <span class="nav-text">Clientes</span>
+            </a>
+            <a href="/historial_venta" class="nav-item">
+                <i class="nav-icon fas fa-history"></i>
+                <span class="nav-text">Historial</span>
+            </a>
+            <a href="/inventario" class="nav-item">
+                <i class="nav-icon fas fa-warehouse"></i>
+                <span class="nav-text">Inventario</span>
+            </a>
+            <a href="/reporte_caja" class="nav-item">
+                <i class="nav-icon fas fa-chart-bar"></i>
+                <span class="nav-text">Reportes</span>
+            </a>
+            <a href="/declaracion_renta" class="nav-item active">
+                <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                <span class="nav-text">Declaración de Renta</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content" id="mainContent">
+        <header class="top-header">
+            <div class="header-left">
+                <h1><i class="fas fa-file-invoice-dollar"></i> Declaración de Renta</h1>
+                <p>Resumen fiscal de compras a proveedores para revisión y preparación del período.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="btnLimpiarFiltros">
+                    <i class="fas fa-eraser"></i> Limpiar
+                </button>
+                <button class="btn btn-warning" id="btnPdfReporte">
+                    <i class="fas fa-file-pdf"></i> PDF Premium
+                </button>
+                <button class="btn btn-success" id="btnExcelReporte">
+                    <i class="fas fa-file-excel"></i> Excel Avanzado
+                </button>
+                <button class="btn btn-primary" id="btnRecargarDatos">
+                    <i class="fas fa-sync"></i> Recargar
+                </button>
+            </div>
+        </header>
+
+        <div class="content-panel">
+            <!-- FILTROS -->
+            <div class="filters">
+                <div class="form-group">
+                    <label for="filtroAnio"><i class="fas fa-calendar-year"></i> Año</label>
+                    <input type="number" id="filtroAnio" min="2020" step="1">
+                </div>
+                <div class="form-group">
+                    <label for="filtroMes"><i class="fas fa-calendar-month"></i> Mes</label>
+                    <select id="filtroMes">
+                        <option value="">Todos</option>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fechaInicio"><i class="fas fa-calendar-start"></i> Fecha inicio</label>
+                    <input type="date" id="fechaInicio">
+                </div>
+                <div class="form-group">
+                    <label for="fechaFin"><i class="fas fa-calendar-end"></i> Fecha fin</label>
+                    <input type="date" id="fechaFin">
+                    <div class="quick-filters">
+                        <button class="btn-sm" data-rapido="hoy">Hoy</button>
+                        <button class="btn-sm" data-rapido="semana">Semana</button>
+                        <button class="btn-sm" data-rapido="mes">Este Mes</button>
+                        <button class="btn-sm" data-rapido="trimestre">Trimestre</button>
+                        <button class="btn-sm" data-rapido="anio">Año</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="filtroProveedor"><i class="fas fa-building"></i> Proveedor</label>
+                    <select id="filtroProveedor">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="form-group" style="justify-content: flex-end;">
+                    <button class="btn btn-primary" id="btnAplicarFiltros" style="margin-top: 22px;">
+                        <i class="fas fa-filter"></i> Aplicar filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARJETAS DE ESTADÍSTICAS - RESUMEN FISCAL COMPLETO -->
+            <div class="stats-grid" id="statsGrid">
+                <!-- ROW 1: INGRESOS -->
+                <div class="stat-card" style="border-left: 4px solid var(--exito);">
+                    <div class="stat-label">Ingresos brutos</div>
+                    <div class="stat-value" id="ingresoBruto" style="color: var(--exito);">$ 0</div>
+                    <div class="stat-foot">Todas las ventas del período</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--turquesa);">
+                    <div class="stat-label">Ventas contado</div>
+                    <div class="stat-value" id="ventasContado">$ 0</div>
+                    <div class="stat-foot">Ingresos inmediatos</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--advertencia);">
+                    <div class="stat-label">Ventas crédito</div>
+                    <div class="stat-value" id="ventasCredito">$ 0</div>
+                    <div class="stat-foot">Cartera a cobrar</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--azul-mix);">
+                    <div class="stat-label">Cobros reales</div>
+                    <div class="stat-value" id="cobrosReales">$ 0</div>
+                    <div class="stat-foot">Contado + abonos + anticipos</div>
+                </div>
+
+                <!-- ROW 2: COSTOS -->
+                <div class="stat-card" style="border-left: 4px solid var(--terracota);">
+                    <div class="stat-label">Costo de ventas</div>
+                    <div class="stat-value" id="costoVentas">$ 0</div>
+                    <div class="stat-foot">Precio costo de productos</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--mostaza);">
+                    <div class="stat-label">Gastos operativos</div>
+                    <div class="stat-value" id="gastosOperativos">$ 0</div>
+                    <div class="stat-foot">Compras a proveedores</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--error);">
+                    <div class="stat-label">Egresos caja</div>
+                    <div class="stat-value" id="egresosCaja">$ 0</div>
+                    <div class="stat-foot">Salidas de efectivo</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--teal);">
+                    <div class="stat-label">Saldo pendiente</div>
+                    <div class="stat-value" id="saldoPendiente">$ 0</div>
+                    <div class="stat-foot">Por cobrar en créditos</div>
+                </div>
+
+                <!-- ROW 3: UTILIDADES Y FLUJO -->
+                <div class="stat-card" style="border-left: 4px solid var(--exito); background: rgba(39,174,96,0.08);">
+                    <div class="stat-label">Utilidad bruta</div>
+                    <div class="stat-value" id="utilidadBruta" style="color: var(--exito); font-weight: 800;">$ 0</div>
+                    <div class="stat-foot">Ingresos - Costo ventas</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--exito); background: rgba(39,174,96,0.12);">
+                    <div class="stat-label">Utilidad neta</div>
+                    <div class="stat-value" id="utilidadNeta" style="color: var(--exito); font-weight: 800;">$ 0</div>
+                    <div class="stat-foot">Utilidad bruta - Gastos</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--azul-mix);">
+                    <div class="stat-label">Flujo de caja</div>
+                    <div class="stat-value" id="flujoCaja">$ 0</div>
+                    <div class="stat-foot">Ingresos - Egresos en caja</div>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--mostaza);">
+                    <div class="stat-label">IVA soportado</div>
+                    <div class="stat-value" id="ivaSoportado">$ 0</div>
+                    <div class="stat-foot">19% gastos operativos</div>
+                </div>
+            </div>
+
+            <!-- ANÁLISIS COMPARATIVO -->
+            <div class="analysis-grid">
+                <div class="analysis-card">
+                    <div class="label">Período actual</div>
+                    <div class="value" id="periodoActual">$ 0</div>
+                    <div class="delta positive" id="deltaPeriodoActual">Sin variación</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="label">Período anterior</div>
+                    <div class="value" id="periodoAnterior">$ 0</div>
+                    <div class="delta neutral" id="deltaPeriodoAnterior">Comparación automática</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="label">Deducciones estimadas</div>
+                    <div class="value" id="deduccionesTotales">$ 0</div>
+                    <div class="delta positive" id="deltaDeducciones">Base deducible</div>
+                </div>
+                <div class="analysis-card">
+                    <div class="label">Retenciones / IVA</div>
+                    <div class="value" id="retencionesIva">$ 0</div>
+                    <div class="delta neutral" id="deltaRetenciones">Revisión fiscal</div>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS -->
+            <div class="chart-grid">
+                <div class="chart-panel">
+                    <h4><i class="fas fa-chart-bar"></i> Evolución mensual</h4>
+                    <div id="chartMensualContainer">
+                        <canvas id="chartMensual"></canvas>
+                    </div>
+                </div>
+                <div class="chart-panel">
+                    <h4><i class="fas fa-chart-pie"></i> Proveedores principales</h4>
+                    <div id="chartTopProveedoresContainer">
+                        <canvas id="chartTopProveedores"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN SECUNDARIA -->
+            <div class="secondary-grid">
+                <div class="panel-box">
+                    <h3><i class="fas fa-trophy"></i> Top proveedores</h3>
+                    <div id="topProveedoresList" class="top-providers-list"></div>
+                </div>
+                <div class="panel-box">
+                    <h3><i class="fas fa-chart-line"></i> Comparativo mensual</h3>
+                    <div id="monthTrend" class="month-bars"></div>
+                </div>
+            </div>
+
+            <!-- TABLA DE PROVEEDORES -->
+            <div class="table-wrap">
+                <div class="table-toolbar">
+                    <div class="table-info">
+                        <span id="tableInfo">Mostrando 0 proveedores</span>
+                    </div>
+                    <div class="table-actions">
+                        <button class="btn btn-secondary btn-sm" id="btnImprimirTabla">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Documento</th>
+                            <th>Estado</th>
+                            <th>Total compras</th>
+                            <th>Cantidad total</th>
+                            <th>Última compra</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaDeclaracionBody">
+                        <tr>
+                            <td colspan="7" class="muted text-center py-4">
+                                <i class="fas fa-spinner fa-spin"></i> Cargando información...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALLE -->
+    <div class="modal-backdrop" id="detalleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="detalleTitulo">Detalle del proveedor</h3>
+                <button class="close-btn" type="button" id="cerrarDetalle">&times;</button>
+            </div>
+            <div class="modal-body" id="detalleCuerpo">
+                <div class="muted text-center py-4">Cargando detalle...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/clientes-proveedores';
+        const estadoByValue = {
+            activo: 'Activo',
+            inactivo: 'Inactivo'
+        };
+
+        // ===== VARIABLES GLOBALES =====
+        let sidebarCollapsed = false;
+        let charts = {};
+        let cachedData = {};
+
+        // ===== TOGGLE SIDEBAR =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const toggleBtn = document.getElementById('toggleSidebar');
+            const toggleBtnCollapsed = document.getElementById('toggleSidebarCollapsed');
+
+            sidebarCollapsed = !sidebarCollapsed;
+
+            if (sidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                toggleBtnCollapsed.style.display = 'flex';
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('expanded');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                toggleBtnCollapsed.style.display = 'none';
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        }
+
+        // ===== CARGAR ESTADO DEL SIDEBAR =====
+        function cargarEstadoSidebar() {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('expanded');
+                document.getElementById('toggleSidebar').innerHTML = '<i class="fas fa-chevron-right"></i>';
+                document.getElementById('toggleSidebarCollapsed').style.display = 'flex';
+                sidebarCollapsed = true;
+            }
+        }
+
+        // ===== LOADING =====
+        function showLoading(show = true) {
+            document.getElementById('loadingOverlay').classList.toggle('active', show);
+        }
+
+        // ===== FUNCIONES DE FORMATO =====
+        function formatCurrency(value) {
+            const n = Number(value || 0);
+            return `$ ${n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        }
+
+        function formatCurrencyShort(value) {
+            const n = Number(value || 0);
+            if (n >= 1000000000) return `$${(n / 1000000000).toFixed(1)}B`;
+            if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+            if (n >= 1000) return `$${(n / 1000).toFixed(1)}K`;
+            return `$${n.toLocaleString('es-CO')}`;
+        }
+
+        function formatDate(value) {
+            if (!value) return 'Sin fecha';
+            const d = new Date(value + 'T00:00:00');
+            if (Number.isNaN(d.getTime())) return value;
+            return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function formatDateShort(value) {
+            if (!value) return 'N/A';
+            const d = new Date(value + 'T00:00:00');
+            if (Number.isNaN(d.getTime())) return value;
+            return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+        }
+
+        function parseCurrency(str) {
+            return parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
+        }
+
+        // ===== NOTIFICACIONES =====
+        function showNotification(message, type = 'info', duration = 3500) {
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => existing.remove(), 300);
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            notification.innerHTML = `
+                <i class="fas ${icons[type] || icons.info}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        }
+
+        // ===== API REQUEST =====
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
+            if (data !== null) options.body = JSON.stringify(data);
+            const res = await fetch(`${API_BASE}${endpoint}`, options);
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Error al consultar datos');
+            return json;
+        }
+
+        // ===== FILTROS =====
+        function setDefaultFilters() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const primerDia = `${y}-${m}-01`;
+            const fechaActual = `${y}-${m}-${d}`;
+            document.getElementById('filtroAnio').value = y;
+            document.getElementById('filtroMes').value = String(now.getMonth() + 1);
+            document.getElementById('fechaInicio').value = primerDia;
+            document.getElementById('fechaFin').value = fechaActual;
+        }
+
+        function setQuickFilter(type) {
+            const now = new Date();
+            let start = new Date();
+            let end = new Date();
+
+            switch (type) {
+                case 'hoy':
+                    start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    break;
+                case 'semana':
+                    const day = now.getDay();
+                    start = new Date(now);
+                    start.setDate(now.getDate() - day + (day === 0 ? -6 : 1));
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    break;
+                case 'mes':
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    break;
+                case 'trimestre':
+                    const quarter = Math.floor(now.getMonth() / 3);
+                    start = new Date(now.getFullYear(), quarter * 3, 1);
+                    end = new Date(now.getFullYear(), quarter * 3 + 3, 0);
+                    break;
+                case 'anio':
+                    start = new Date(now.getFullYear(), 0, 1);
+                    end = new Date(now.getFullYear(), 11, 31);
+                    break;
+            }
+
+            const format = (d) => d.toISOString().slice(0, 10);
+            document.getElementById('fechaInicio').value = format(start);
+            document.getElementById('fechaFin').value = format(end);
+            document.getElementById('filtroAnio').value = now.getFullYear();
+            document.getElementById('filtroMes').value = '';
+
+            aplicarFiltros();
+        }
+
+        function getRangeFromFilters() {
+            const year = Number(document.getElementById('filtroAnio').value || new Date().getFullYear());
+            const month = Number(document.getElementById('filtroMes').value || '');
+            let start = document.getElementById('fechaInicio').value;
+            let end = document.getElementById('fechaFin').value;
+
+            if ((!start || !end) && year) {
+                if (month) {
+                    const startDate = new Date(year, month - 1, 1);
+                    const endDate = new Date(year, month, 0);
+                    start = startDate.toISOString().slice(0, 10);
+                    end = endDate.toISOString().slice(0, 10);
+                } else {
+                    start = `${year}-01-01`;
+                    end = `${year}-12-31`;
+                }
+            }
+
+            document.getElementById('fechaInicio').value = start;
+            document.getElementById('fechaFin').value = end;
+            return { start, end };
+        }
+
+        // ===== CARGAR PROVEEDORES PARA FILTRO =====
+        async function cargarProveedoresFiltro() {
+            try {
+                const resp = await apiRequest('/proveedores?per_page=1000');
+                const select = document.getElementById('filtroProveedor');
+                if (!resp.success) return;
+                const proveedores = resp.proveedores || [];
+                select.innerHTML = '<option value="">Todos</option>' + proveedores.map(p =>
+                    `<option value="${p.telefono}">${p.nombre_empresa || p.nombre_proveedor || p.telefono}</option>`
+                ).join('');
+            } catch (error) {
+                console.error('Error cargando proveedores del filtro:', error);
+                showNotification('Error al cargar proveedores', 'error');
+            }
+        }
+
+        // ===== CARGAR DATOS PRINCIPALES =====
+        async function cargarDatosCompletos() {
+            showLoading(true);
+            const { start, end } = getRangeFromFilters();
+            const proveedor = document.getElementById('filtroProveedor').value;
+
+            try {
+                const resp = await apiRequest(
+                    `/declaracion-renta/resumen?fecha_inicio=${encodeURIComponent(start || '')}&fecha_fin=${encodeURIComponent(end || '')}&proveedor_telefono=${encodeURIComponent(proveedor || '')}`
+                );
+                const data = resp.data || {};
+                cachedData = data;
+
+                const resumen = data.resumen || {};
+                
+                // Función auxiliar para actualizar elemento de forma segura
+                const updateElement = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value;
+                    else console.warn(`Elemento con ID ${id} no encontrado`);
+                };
+                
+                // INGRESOS
+                updateElement('ingresoBruto', formatCurrency(resumen.ingresos_brutos || 0));
+                updateElement('ventasContado', formatCurrency(resumen.ventas_contado || 0));
+                updateElement('ventasCredito', formatCurrency(resumen.ventas_credito || 0));
+                updateElement('cobrosReales', formatCurrency(resumen.cobros_reales || 0));
+                
+                // COSTOS Y GASTOS
+                updateElement('costoVentas', formatCurrency(resumen.costo_ventas || 0));
+                updateElement('gastosOperativos', formatCurrency(resumen.gastos_totales || 0));
+                updateElement('egresosCaja', formatCurrency(resumen.egresos_caja || 0));
+                updateElement('saldoPendiente', formatCurrency(resumen.saldo_pendiente || 0));
+                
+                // UTILIDADES Y FLUJO
+                updateElement('utilidadBruta', formatCurrency(resumen.utilidad_bruta || 0));
+                updateElement('utilidadNeta', formatCurrency(resumen.utilidad_neta || 0));
+                updateElement('flujoCaja', formatCurrency(resumen.flujo_caja || 0));
+                updateElement('ivaSoportado', formatCurrency(resumen.total_iva_soportado || 0));
+                
+                // Compatibilidad con comparativa
+                updateElement('totalProveedores', resumen.total_proveedores || 0);
+                updateElement('totalCompras', resumen.total_compras || 0);
+
+                const topProveedores = data.top_proveedores || [];
+                const maxValue = topProveedores.length ? Math.max(...topProveedores.map(p => Number(p.total || 0))) : 1;
+                const topList = document.getElementById('topProveedoresList');
+                if (topList) {
+                    topList.innerHTML = topProveedores.length ? topProveedores.slice(0, 10).map(prov => `
+                        <div class="provider-bar-row">
+                            <span title="${prov.nombre || 'Proveedor'}">${(prov.nombre || 'Proveedor').substring(0, 25)}</span>
+                            <div class="bar-track"><div class="bar-fill" style="width:${Math.max((Number(prov.total || 0) / maxValue) * 100, 5)}%"></div></div>
+                            <strong>${formatCurrencyShort(prov.total || 0)}</strong>
+                        </div>
+                    `).join('') : '<div class="muted">Sin proveedores con compras.</div>';
+                } else {
+                    console.warn('Elemento topProveedoresList no encontrado');
+                }
+
+                const porMes = data.por_mes || [];
+                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const monthValues = porMes.reduce((acc, item) => { acc[Number(item.mes) - 1] = Number(item.total || 0); return acc; },
+                    Array(12).fill(0));
+                const monthMax = Math.max(...monthValues, 1);
+                const monthTrend = document.getElementById('monthTrend');
+                if (monthTrend) {
+                    monthTrend.innerHTML = monthValues.map((value, idx) => `
+                        <div class="month-row">
+                            <span>${months[idx]}</span>
+                            <div class="bar-track"><div class="bar-fill" style="width:${value ? (value / monthMax) * 100 : 1}%"></div></div>
+                            <strong>${value ? formatCurrencyShort(value) : '$0'}</strong>
+                        </div>
+                    `).join('');
+                } else {
+                    console.warn('Elemento monthTrend no encontrado');
+                }
+
+                await cargarProveedoresDeclaracion();
+                renderCharts(porMes, topProveedores);
+                await cargarComparativaPeriodos();
+
+                showNotification('Datos actualizados correctamente', 'success');
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showNotification('Error al cargar los datos: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ===== CARGAR PROVEEDORES DECLARACIÓN =====
+        async function cargarProveedoresDeclaracion() {
+            const { start, end } = getRangeFromFilters();
+            try {
+                const resp = await apiRequest(
+                    `/declaracion-renta/proveedores?fecha_inicio=${encodeURIComponent(start || '')}&fecha_fin=${encodeURIComponent(end || '')}`
+                );
+                const proveedores = resp.proveedores || [];
+                sessionStorage.setItem('declaracion_proveedores', JSON.stringify(proveedores));
+
+                const tbody = document.getElementById('tablaDeclaracionBody');
+                const tableInfo = document.getElementById('tableInfo');
+                
+                if (!tbody) {
+                    console.warn('Elemento tablaDeclaracionBody no encontrado');
+                    return;
+                }
+                
+                if (!proveedores.length) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="7" class="muted text-center py-4"><i class="fas fa-inbox"></i> No hay compras registradas para este período</td></tr>';
+                    if (tableInfo) tableInfo.textContent = 'Mostrando 0 proveedores';
+                    return;
+                }
+
+                tbody.innerHTML = proveedores.map((prov, index) => `
+                    <tr>
+                        <td><strong>${prov.nombre_empresa || prov.nombre_proveedor || 'Proveedor'}</strong></td>
+                        <td>${prov.telefono || 'N/A'}</td>
+                        <td><span class="status-badge ${prov.estado === 'activo' ? 'status-activo' : 'status-inactivo'}">${estadoByValue[prov.estado] || 'Activo'}</span></td>
+                        <td>${formatCurrency(prov.total_compras || 0)}</td>
+                        <td>${Number(prov.cantidad_total || 0).toLocaleString('es-CO')}</td>
+                        <td>${formatDate(prov.ultima_compra)}</td>
+                        <td><button class="btn btn-secondary btn-sm" type="button" onclick="abrirDetalleProveedor('${prov.telefono || ''}')"><i class="fas fa-eye"></i> Ver</button></td>
+                    </tr>
+                `).join('');
+
+                if (tableInfo) tableInfo.textContent = `Mostrando ${proveedores.length} proveedores`;
+
+            } catch (error) {
+                console.error('Error cargando proveedores de declaración:', error);
+                showNotification('Error al cargar los proveedores', 'error');
+            }
+        }
+
+        // ===== COMPARATIVA DE PERÍODOS =====
+        function getPreviousPeriodRange(start, end) {
+            if (!start || !end) return { start: '', end: '' };
+            const startDate = new Date(start + 'T00:00:00');
+            const endDate = new Date(end + 'T00:00:00');
+            const diffDays = Math.max(1, Math.round((endDate - startDate) / 86400000));
+            const previousEnd = new Date(startDate);
+            previousEnd.setDate(previousEnd.getDate() - 1);
+            const previousStart = new Date(previousEnd);
+            previousStart.setDate(previousStart.getDate() - diffDays + 1);
+            const format = (date) => date.toISOString().slice(0, 10);
+            return {
+                start: format(previousStart),
+                end: format(previousEnd)
+            };
+        }
+
+        async function cargarComparativaPeriodos() {
+            const { start, end } = getRangeFromFilters();
+            const previousRange = getPreviousPeriodRange(start, end);
+
+            try {
+                const [actualResp, previousResp] = await Promise.all([
+                    apiRequest(
+                        `/declaracion-renta/resumen?fecha_inicio=${encodeURIComponent(start || '')}&fecha_fin=${encodeURIComponent(end || '')}`),
+                    apiRequest(
+                        `/declaracion-renta/resumen?fecha_inicio=${encodeURIComponent(previousRange.start || '')}&fecha_fin=${encodeURIComponent(previousRange.end || '')}`
+                        )
+                ]);
+
+                const actual = actualResp.data?.resumen || {};
+                const previous = previousResp.data?.resumen || {};
+                const currentValue = Number(actual.utilidad_neta || 0);
+                const previousValue = Number(previous.utilidad_neta || 0);
+                const delta = currentValue - previousValue;
+                const pct = previousValue ? (delta / previousValue) * 100 : 0;
+
+                // Función auxiliar para actualizar elemento de forma segura
+                const updateElement = (id, value) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = value;
+                    else console.warn(`Elemento con ID ${id} no encontrado en cargarComparativaPeriodos`);
+                };
+
+                updateElement('periodoActual', formatCurrency(currentValue));
+                updateElement('periodoAnterior', formatCurrency(previousValue));
+                updateElement('deduccionesTotales', formatCurrency(Number(actual.base_gasto || 0)));
+                updateElement('retencionesIva', formatCurrency(Number(actual.total_iva_soportado || 0)));
+
+                const deltaEl = document.getElementById('deltaPeriodoActual');
+                const deltaAnteriorEl = document.getElementById('deltaPeriodoAnterior');
+                const deduccionesEl = document.getElementById('deltaDeducciones');
+                const retencionesEl = document.getElementById('deltaRetenciones');
+
+                if (previousValue === 0) {
+                    if (deltaEl) { deltaEl.textContent = 'Sin comparación disponible'; deltaEl.className = 'delta neutral'; }
+                    if (deltaAnteriorEl) { deltaAnteriorEl.textContent = 'No hay período anterior'; deltaAnteriorEl.className = 'delta neutral'; }
+                } else {
+                    if (deltaEl) { 
+                        deltaEl.textContent = `${delta >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% ${delta >= 0 ? 'aumento' : 'disminución'}`;
+                        deltaEl.className = `delta ${delta >= 0 ? 'positive' : 'negative'}`;
+                    }
+                    if (deltaAnteriorEl) {
+                        deltaAnteriorEl.textContent = `${delta >= 0 ? 'Aumento' : 'Disminución'} de ${formatCurrency(Math.abs(delta))}`;
+                        deltaAnteriorEl.className = `delta ${delta >= 0 ? 'positive' : 'negative'}`;
+                    }
+                }
+
+                if (deduccionesEl) deduccionesEl.textContent = `Base: ${formatCurrency(Number(actual.base_gasto || 0) * 0.25)}`;
+                if (retencionesEl) retencionesEl.textContent = `IVA: ${formatCurrency(Number(actual.total_iva_soportado || 0))}`;
+
+            } catch (error) {
+                console.error('Error cargando comparativa de períodos:', error);
+            }
+        }
+
+        // ===== GRÁFICOS =====
+        function renderCharts(monthlyData, providerData) {
+            const monthLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const monthlyValues = Array(12).fill(0);
+            monthlyData.forEach(item => {
+                const idx = Number(item.mes || 0) - 1;
+                if (idx >= 0 && idx < 12) monthlyValues[idx] = Number(item.total || 0);
+            });
+
+            if (charts.mensual) {
+                charts.mensual.destroy();
+            }
+
+            // Verificar si el elemento existe antes de usarlo
+            const ctxMensualElement = document.getElementById('chartMensual');
+            if (!ctxMensualElement) {
+                console.warn('Elemento chartMensual no encontrado en el DOM');
+                return;
+            }
+            
+            const ctxMensual = ctxMensualElement.getContext('2d');
+            charts.mensual = new Chart(ctxMensual, {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [{
+                        label: 'Compras',
+                        data: monthlyValues,
+                        backgroundColor: monthlyValues.map(v => v > 0 ? '#1F8A86' : '#e0e0e0'),
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Compras: ${formatCurrency(context.parsed.y)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: value => formatCurrencyShort(value)
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (charts.providers) {
+                charts.providers.destroy();
+            }
+
+            // Verificar si el elemento existe antes de usarlo
+            const ctxProvidersElement = document.getElementById('chartTopProveedores');
+            if (!ctxProvidersElement) {
+                console.warn('Elemento chartTopProveedores no encontrado en el DOM');
+                return;
+            }
+            
+            const ctxProviders = ctxProvidersElement.getContext('2d');
+            const topProviders = providerData.slice(0, 6);
+            const labels = topProviders.map(item => (item.nombre || 'Proveedor').substring(0, 20));
+            const values = topProviders.map(item => Number(item.total || 0));
+            const colors = ['#1F8A86', '#3FA6A0', '#D9C357', '#C08A67', '#3498db', '#9b59b6'];
+
+            charts.providers = new Chart(ctxProviders, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['Sin datos'],
+                    datasets: [{
+                        label: 'Participación',
+                        data: values.length ? values : [1],
+                        backgroundColor: colors.slice(0, values.length || 1),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 11 },
+                                padding: 10
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const pct = total ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                    return `${context.label}: ${formatCurrency(context.parsed)} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ===== ABRIR DETALLE PROVEEDOR =====
+        async function abrirDetalleProveedor(telefono) {
+            if (!telefono) return;
+            const { start, end } = getRangeFromFilters();
+            const modal = document.getElementById('detalleModal');
+            const titulo = document.getElementById('detalleTitulo');
+            const cuerpo = document.getElementById('detalleCuerpo');
+            titulo.textContent = 'Cargando detalle...';
+            cuerpo.innerHTML = '<div class="muted text-center py-4"><i class="fas fa-spinner fa-spin"></i> Cargando detalle...</div>';
+            modal.classList.add('visible');
+
+            try {
+                const resp = await apiRequest(
+                    `/declaracion-renta/proveedor/${encodeURIComponent(telefono)}/detalle?fecha_inicio=${encodeURIComponent(start || '')}&fecha_fin=${encodeURIComponent(end || '')}`
+                );
+                const data = resp.data || {};
+                const proveedor = data.proveedor || {};
+                const compras = data.compras || [];
+                const resumen = data.resumen || {};
+
+                titulo.textContent = proveedor.nombre_empresa || proveedor.nombre_proveedor || 'Proveedor';
+                cuerpo.innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-box">
+                            <strong>Total compras</strong>
+                            <span>${formatCurrency(resumen.total_compras || 0)}</span>
+                        </div>
+                        <div class="detail-box">
+                            <strong>Cantidad total</strong>
+                            <span>${Number(resumen.cantidad_total || 0).toLocaleString('es-CO')}</span>
+                        </div>
+                        <div class="detail-box">
+                            <strong>Última compra</strong>
+                            <span>${formatDate(resumen.ultima_compra)}</span>
+                        </div>
+                        <div class="detail-box">
+                            <strong>IVA soportado</strong>
+                            <span>${formatCurrency(resumen.iva_soportado || 0)}</span>
+                        </div>
+                    </div>
+                    ${compras.length ? `
+                        <div style="margin: 16px 0 8px; font-weight: 600; color: var(--gris-oscuro);">
+                            <i class="fas fa-list"></i> Detalle de compras (${compras.length})
+                        </div>
+                        <table class="mini-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${compras.map(item => `
+                                    <tr>
+                                        <td>${formatDate(item.fecha_compra)}</td>
+                                        <td>${item.producto || 'Sin producto'}</td>
+                                        <td>${Number(item.cantidad || 0).toLocaleString('es-CO')}</td>
+                                        <td>${formatCurrency(item.total_compra || 0)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : '<div class="muted text-center py-4">Sin compras registradas</div>'}
+                `;
+            } catch (error) {
+                console.error('Error cargando detalle del proveedor:', error);
+                titulo.textContent = 'Error al cargar detalle';
+                cuerpo.innerHTML = '<div class="muted text-center py-4"><i class="fas fa-exclamation-triangle"></i> No fue posible consultar el detalle.</div>';
+                showNotification('Error al cargar el detalle', 'error');
+            }
+        }
+
+        // ===== CERRAR DETALLE =====
+        function cerrarDetalleProveedor() {
+            document.getElementById('detalleModal').classList.remove('visible');
+        }
+
+        // ===== EXPORTAR PDF PREMIUM (CORREGIDO) =====
+        function exportarPdfReporte() {
+            showNotification('Generando PDF profesional...', 'info');
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+                const a4Width = pdf.internal.pageSize.getWidth();
+                const a4Height = pdf.internal.pageSize.getHeight();
+                let yPos = 0;
+
+                // PORTADA
+                pdf.setFillColor(31, 138, 134);
+                pdf.rect(0, 0, a4Width, 100, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(28);
+                pdf.text('AGROVET', 40, 45);
+                pdf.setFontSize(12);
+                pdf.text('Declaración de Renta - Resumen Fiscal', 40, 65);
+                pdf.text('Yacuanquer - Sistema POS', 40, 80);
+
+                // Fecha y período
+                pdf.setTextColor(200, 138, 103);
+                pdf.setFontSize(11);
+                const now = new Date();
+                const { start, end } = getRangeFromFilters();
+                pdf.text(`Período: ${formatDate(start)} al ${formatDate(end)}`, a4Width - 180, 45);
+                pdf.text(`Generado: ${now.toLocaleString('es-CO')}`, a4Width - 180, 60);
+                pdf.text(`Año fiscal: ${document.getElementById('filtroAnio').value || now.getFullYear()}`, a4Width - 180, 75);
+
+                yPos = 120;
+
+                // SECCIÓN 1: RESUMEN DE INGRESOS
+                pdf.setTextColor(44, 62, 80);
+                pdf.setFontSize(14);
+                pdf.text('1. RESUMEN DE INGRESOS', 40, yPos);
+                yPos += 12;
+                pdf.setDrawColor(31, 138, 134);
+                pdf.line(40, yPos, a4Width - 40, yPos);
+                yPos += 10;
+
+                const ingresosSummary = [
+                    ['Ingresos brutos', document.getElementById('ingresoBruto').textContent],
+                    ['Ventas de contado', document.getElementById('ventasContado').textContent],
+                    ['Ventas a crédito', document.getElementById('ventasCredito').textContent],
+                    ['Cobros reales (contado + abonos)', document.getElementById('cobrosReales').textContent],
+                    ['Saldo pendiente por cobrar', document.getElementById('saldoPendiente').textContent]
+                ];
+
+                pdf.autoTable({
+                    startY: yPos,
+                    head: [['Concepto', 'Valor']],
+                    body: ingresosSummary,
+                    theme: 'grid',
+                    headStyles: { fillColor: [31, 138, 134], textColor: 255, fontSize: 10, fontStyle: 'bold' },
+                    bodyStyles: { fontSize: 9 },
+                    columnStyles: { 0: { cellWidth: 120 }, 1: { cellWidth: 80, halign: 'right' } },
+                    margin: { left: 40, right: 40 }
+                });
+                yPos = pdf.lastAutoTable.finalY + 15;
+
+                // SECCIÓN 2: COSTOS Y GASTOS
+                pdf.setFontSize(14);
+                pdf.text('2. COSTOS Y GASTOS OPERATIVOS', 40, yPos);
+                yPos += 12;
+                pdf.line(40, yPos, a4Width - 40, yPos);
+                yPos += 10;
+
+                const gastosSummary = [
+                    ['Costo de ventas (productos)', document.getElementById('costoVentas').textContent],
+                    ['Gastos operativos (compras)', document.getElementById('gastosOperativos').textContent],
+                    ['Egresos de caja registrados', document.getElementById('egresosCaja').textContent],
+                    ['Total gastos', formatCurrency(Number(document.getElementById('gastosOperativos').textContent.replace(/[^\d.-]/g,'')) + Number(document.getElementById('egresosCaja').textContent.replace(/[^\d.-]/g,'')))]
+                ];
+
+                pdf.autoTable({
+                    startY: yPos,
+                    head: [['Concepto', 'Valor']],
+                    body: gastosSummary,
+                    theme: 'grid',
+                    headStyles: { fillColor: [196, 138, 103], textColor: 255, fontSize: 10, fontStyle: 'bold' },
+                    bodyStyles: { fontSize: 9 },
+                    columnStyles: { 0: { cellWidth: 120 }, 1: { cellWidth: 80, halign: 'right' } },
+                    margin: { left: 40, right: 40 }
+                });
+                yPos = pdf.lastAutoTable.finalY + 15;
+
+                // SECCIÓN 3: UTILIDADES Y FLUJO DE CAJA
+                pdf.setFontSize(14);
+                pdf.text('3. ANÁLISIS DE RENTABILIDAD', 40, yPos);
+                yPos += 12;
+                pdf.line(40, yPos, a4Width - 40, yPos);
+                yPos += 10;
+
+                const rentabSummary = [
+                    ['Utilidad bruta (Ingresos - Costo ventas)', document.getElementById('utilidadBruta').textContent],
+                    ['Utilidad neta (Utilidad bruta - Gastos)', document.getElementById('utilidadNeta').textContent],
+                    ['Flujo de caja neto', document.getElementById('flujoCaja').textContent],
+                    ['IVA soportado (19% de gastos)', document.getElementById('ivaSoportado').textContent]
+                ];
+
+                pdf.autoTable({
+                    startY: yPos,
+                    head: [['Concepto', 'Valor']],
+                    body: rentabSummary,
+                    theme: 'grid',
+                    headStyles: { fillColor: [39, 174, 96], textColor: 255, fontSize: 10, fontStyle: 'bold' },
+                    bodyStyles: { fontSize: 9 },
+                    columnStyles: { 0: { cellWidth: 120 }, 1: { cellWidth: 80, halign: 'right' } },
+                    margin: { left: 40, right: 40 }
+                });
+                yPos = pdf.lastAutoTable.finalY + 15;
+
+                // Nueva página si es necesario
+                if (yPos > a4Height - 100) {
+                    pdf.addPage();
+                    yPos = 40;
+                }
+
+                // SECCIÓN 4: PROVEEDORES PRINCIPALES
+                pdf.setFontSize(14);
+                pdf.text('4. TOP 10 PROVEEDORES', 40, yPos);
+                yPos += 12;
+                pdf.line(40, yPos, a4Width - 40, yPos);
+                yPos += 10;
+
+                const proveedoresData = cachedData.top_proveedores || [];
+                const proveedoresRows = proveedoresData.slice(0, 10).map(p => [
+                    (p.nombre || 'Proveedor').substring(0, 30),
+                    formatCurrency(p.total || 0)
+                ]);
+
+                if (proveedoresRows.length === 0) {
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(127, 140, 141);
+                    pdf.text('Sin información de proveedores', 40, yPos + 10);
+                    yPos += 30;
+                } else {
+                    pdf.autoTable({
+                        startY: yPos,
+                        head: [['Proveedor', 'Total compras']],
+                        body: proveedoresRows,
+                        theme: 'striped',
+                        headStyles: { fillColor: [217, 195, 87], textColor: 44, fontSize: 9, fontStyle: 'bold' },
+                        bodyStyles: { fontSize: 8 },
+                        columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 90, halign: 'right' } },
+                        margin: { left: 40, right: 40 }
+                    });
+                    yPos = pdf.lastAutoTable.finalY + 10;
+                }
+
+                // FOOTER
+                pdf.setFontSize(8);
+                pdf.setTextColor(127, 140, 141);
+                pdf.text('Declaración de Renta - Resumen de resultado fiscal para propósitos de apoyo contable y tributario.', 40, a4Height - 30);
+                pdf.text(`AgroVet © 2024 | Sistema POS | Documento generado automáticamente`, 40, a4Height - 20);
+
+                pdf.save(`declaracion_renta_${document.getElementById('filtroAnio').value || now.getFullYear()}_${now.getTime()}.pdf`);
+                showNotification('PDF Premium generado correctamente ✓', 'success');
+
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                showNotification('Error al generar el PDF: ' + error.message, 'error');
+            }
+        }
+
+        // ===== EXPORTAR EXCEL AVANZADO =====
+        function exportarExcelReporte() {
+            showNotification('Generando Excel avanzado con múltiples hojas...', 'info');
+
+            setTimeout(() => {
+                try {
+                    const { start, end } = getRangeFromFilters();
+                    const resumen = cachedData.resumen || {};
+                    const topProveedores = cachedData.top_proveedores || [];
+                    const porMes = cachedData.por_mes || [];
+
+                    const wb = XLSX.utils.book_new();
+                    const now = new Date();
+
+                    // ===== HOJA 1: RESUMEN FISCAL =====
+                    const fiscalSummary = [
+                        ['AGROVET - DECLARACIÓN DE RENTA'],
+                        ['Resumen Fiscal'],
+                        [`Período: ${formatDate(start)} al ${formatDate(end)}`],
+                        [`Generado: ${now.toLocaleString('es-CO')}`],
+                        [''],
+                        ['INGRESOS', 'Valor'],
+                        ['Ingresos brutos', resumen.ingresos_brutos || 0],
+                        ['Ventas de contado', resumen.ventas_contado || 0],
+                        ['Ventas a crédito', resumen.ventas_credito || 0],
+                        ['Cobros reales', resumen.cobros_reales || 0],
+                        ['Saldo pendiente', resumen.saldo_pendiente || 0],
+                        [''],
+                        ['COSTOS Y GASTOS', 'Valor'],
+                        ['Costo de ventas', resumen.costo_ventas || 0],
+                        ['Gastos operativos', resumen.gastos_totales || 0],
+                        ['Egresos de caja', resumen.egresos_caja || 0],
+                        ['Total gastado período', resumen.total_periodo || 0],
+                        [''],
+                        ['RENTABILIDAD', 'Valor'],
+                        ['Utilidad bruta', resumen.utilidad_bruta || 0],
+                        ['Utilidad neta', resumen.utilidad_neta || 0],
+                        ['Flujo de caja', resumen.flujo_caja || 0],
+                        ['IVA soportado', resumen.total_iva_soportado || 0],
+                        [''],
+                        ['INFORMACIÓN TRIBUTARIA', 'Valor'],
+                        ['Proveedores activos', resumen.total_proveedores || 0],
+                        ['Total compras', resumen.total_compras || 0],
+                        ['Base de costo', resumen.base_gasto || 0],
+                        ['Margen estimado', resumen.margen_estimado || 0],
+                        ['Gasto mes actual', resumen.total_mes_actual || 0]
+                    ];
+
+                    const wsFiscal = XLSX.utils.aoa_to_sheet(fiscalSummary);
+                    wsFiscal['!cols'] = [{ wch: 35 }, { wch: 20 }];
+                    wsFiscal['A1'].s = { font: { bold: true, size: 14 }, fill: { fgColor: { rgb: '1F8A86' } }, alignment: { horizontal: 'center' } };
+                    XLSX.utils.book_append_sheet(wb, wsFiscal, 'Resumen Fiscal');
+
+                    // ===== HOJA 2: PROVEEDORES DETALLADO =====
+                    const proveedorRows = [];
+                    const allProveedores = JSON.parse(sessionStorage.getItem('declaracion_proveedores') || '[]');
+                    allProveedores.forEach(p => {
+                        proveedorRows.push({
+                            'Proveedor': p.nombre_empresa || p.nombre_proveedor || 'N/A',
+                            'Teléfono': p.telefono || 'N/A',
+                            'Estado': p.estado === 'activo' ? 'Activo' : 'Inactivo',
+                            'Total Compras': p.total_compras || 0,
+                            'Cantidad Total': p.cantidad_total || 0,
+                            'Última Compra': p.ultima_compra || 'N/A'
+                        });
+                    });
+
+                    if (proveedorRows.length > 0) {
+                        const wsProveedores = XLSX.utils.json_to_sheet(proveedorRows);
+                        wsProveedores['!cols'] = [
+                            { wch: 30 },
+                            { wch: 15 },
+                            { wch: 12 },
+                            { wch: 18 },
+                            { wch: 15 },
+                            { wch: 15 }
+                        ];
+                        XLSX.utils.book_append_sheet(wb, wsProveedores, 'Proveedores');
+                    }
+
+                    // ===== HOJA 3: TOP 10 PROVEEDORES =====
+                    const topProvRows = [];
+                    topProveedores.slice(0, 10).forEach((p, idx) => {
+                        topProvRows.push({
+                            'Ranking': idx + 1,
+                            'Proveedor': p.nombre || 'Proveedor',
+                            'Total Compras': p.total || 0,
+                            '% del Total': resumen.total_compras ? ((p.total / resumen.total_compras) * 100).toFixed(2) + '%' : '0%'
+                        });
+                    });
+
+                    if (topProvRows.length > 0) {
+                        const wsTop = XLSX.utils.json_to_sheet(topProvRows);
+                        wsTop['!cols'] = [
+                            { wch: 10 },
+                            { wch: 30 },
+                            { wch: 18 },
+                            { wch: 15 }
+                        ];
+                        XLSX.utils.book_append_sheet(wb, wsTop, 'Top 10 Proveedores');
+                    }
+
+                    // ===== HOJA 4: TENDENCIA MENSUAL =====
+                    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    const monthlyValues = Array(12).fill(0);
+                    porMes.forEach(item => {
+                        const idx = Number(item.mes || 0) - 1;
+                        if (idx >= 0 && idx < 12) monthlyValues[idx] = Number(item.total || 0);
+                    });
+
+                    const tendenciaRows = [];
+                    monthlyValues.forEach((value, idx) => {
+                        tendenciaRows.push({
+                            'Mes': months[idx],
+                            'Total Compras': value,
+                            'Promedio Diario': value > 0 ? (value / 30).toFixed(0) : 0
+                        });
+                    });
+
+                    const wsTendencia = XLSX.utils.json_to_sheet(tendenciaRows);
+                    wsTendencia['!cols'] = [
+                        { wch: 15 },
+                        { wch: 18 },
+                        { wch: 18 }
+                    ];
+                    XLSX.utils.book_append_sheet(wb, wsTendencia, 'Tendencia Mensual');
+
+                    // ===== HOJA 5: ANÁLISIS COMPARATIVO =====
+                    const analysisData = [
+                        ['MÉTRICAS DE DESEMPEÑO', 'Período Actual'],
+                        [''],
+                        ['Indicador de Rentabilidad', 'Valor'],
+                        ['Margen bruto', (resumen.utilidad_bruta / (resumen.ingresos_brutos || 1) * 100).toFixed(2) + '%'],
+                        ['Margen neto', (resumen.utilidad_neta / (resumen.ingresos_brutos || 1) * 100).toFixed(2) + '%'],
+                        ['Rotación de gastos', ((resumen.gastos_totales || 0) / (resumen.ingresos_brutos || 1) * 100).toFixed(2) + '%'],
+                        [''],
+                        ['Ratios Financieros', 'Valor'],
+                        ['Ingresos / Egresos', ((resumen.ingresos_brutos || 0) / (resumen.egresos_caja || 1)).toFixed(2)],
+                        ['Utilidad / Ingresos', ((resumen.utilidad_neta || 0) / (resumen.ingresos_brutos || 1)).toFixed(3)],
+                        ['Cartera / Ingresos', ((resumen.saldo_pendiente || 0) / (resumen.ingresos_brutos || 1) * 100).toFixed(2) + '%'],
+                        [''],
+                        ['Resumen Operativo', 'Cantidad'],
+                        ['Proveedores activos', resumen.total_proveedores || 0],
+                        ['Total transacciones', resumen.total_compras || 0],
+                        ['Promedio por transacción', resumen.total_compras > 0 ? (resumen.total_periodo / resumen.total_compras).toFixed(0) : 0]
+                    ];
+
+                    const wsAnalysis = XLSX.utils.aoa_to_sheet(analysisData);
+                    wsAnalysis['!cols'] = [{ wch: 35 }, { wch: 25 }];
+                    XLSX.utils.book_append_sheet(wb, wsAnalysis, 'Análisis');
+
+                    // Guardar el archivo
+                    XLSX.writeFile(wb,
+                        `declaracion_renta_${document.getElementById('filtroAnio').value || now.getFullYear()}_${now.getTime()}.xlsx`);
+                    showNotification('✓ Archivo Excel generado con 5 hojas profesionales', 'success');
+
+                } catch (error) {
+                    console.error('Error generando Excel:', error);
+                    showNotification('Error al generar el Excel: ' + error.message, 'error');
+                }
+            }, 500);
+        }
+
+        // ===== IMPRIMIR TABLA =====
+        function imprimirTabla() {
+            const tabla = document.querySelector('.table-wrap table');
+            if (!tabla || !tabla.querySelector('tbody tr td')) {
+                showNotification('No hay datos para imprimir', 'warning');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank', 'width=1024,height=768');
+            if (!printWindow) {
+                showNotification('Por favor permite ventanas emergentes', 'error');
+                return;
+            }
+
+            const fecha = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Declaración de Renta - AgroVet</title>
+                        <style>
+                            body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 30px; color: #2c3e50; }
+                            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1F8A86; padding-bottom: 15px; }
+                            .header h1 { color: #1F8A86; margin: 0; }
+                            .header p { color: #7f8c8d; margin: 5px 0; }
+                            table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                            th { background: #1F8A86; color: white; padding: 12px 10px; text-align: left; }
+                            td { padding: 10px; border-bottom: 1px solid #ecf0f1; }
+                            tr:hover { background: #f8fbfb; }
+                            .status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; display: inline-block; }
+                            .status-activo { background: rgba(39,174,96,0.12); color: #27ae60; }
+                            .status-inactivo { background: rgba(231,76,60,0.1); color: #e74c3c; }
+                            .footer { margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 11px; border-top: 1px solid #ecf0f1; padding-top: 15px; }
+                            .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+                            .summary-item { background: #f8fbfb; padding: 12px 15px; border-radius: 8px; text-align: center; }
+                            .summary-item .label { font-size: 11px; color: #7f8c8d; text-transform: uppercase; }
+                            .summary-item .value { font-size: 18px; font-weight: 700; color: #1F8A86; }
+                            @media print {
+                                .no-print { display: none; }
+                                body { padding: 15px; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>AGROVET - Declaración de Renta</h1>
+                            <p>Sistema POS - Yacuanquer | Período: ${document.getElementById('filtroAnio').value || '2024'}</p>
+                            <p>Fecha: ${fecha}</p>
+                        </div>
+
+                        <div class="summary">
+                            <div class="summary-item">
+                                <div class="label">Ingresos brutos</div>
+                                <div class="value">${document.getElementById('ingresoBruto').textContent}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">Costo de ventas</div>
+                                <div class="value">${document.getElementById('costoVentas').textContent}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">Utilidad neta</div>
+                                <div class="value">${document.getElementById('utilidadNeta').textContent}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">Flujo caja</div>
+                                <div class="value">${document.getElementById('flujoCaja').textContent}</div>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Proveedor</th>
+                                    <th>Documento</th>
+                                    <th>Estado</th>
+                                    <th>Total compras</th>
+                                    <th>Cantidad total</th>
+                                    <th>Última compra</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Array.from(document.querySelectorAll('#tablaDeclaracionBody tr')).filter(tr => tr.querySelector('td') && !tr.textContent.includes('No hay compras')).map(tr => {
+                                    const cells = tr.querySelectorAll('td');
+                                    return `
+                                        <tr>
+                                            <td>${cells[0]?.textContent?.trim() || ''}</td>
+                                            <td>${cells[1]?.textContent?.trim() || ''}</td>
+                                            <td>${cells[2]?.textContent?.trim() || ''}</td>
+                                            <td>${cells[3]?.textContent?.trim() || ''}</td>
+                                            <td>${cells[4]?.textContent?.trim() || ''}</td>
+                                            <td>${cells[5]?.textContent?.trim() || ''}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+
+                        <div class="footer">
+                            Reporte generado automáticamente por AgroVet - Uso interno
+                        </div>
+                        <script>
+                            window.onload = function() { window.print(); }
+                        <\/script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        // ===== APLICAR FILTROS =====
+        function aplicarFiltros() {
+            cargarDatosCompletos();
+            showNotification('Filtros aplicados', 'success');
+        }
+
+        // ===== LIMPIAR FILTROS =====
+        function limpiarFiltros() {
+            setDefaultFilters();
+            document.getElementById('filtroProveedor').value = '';
+            aplicarFiltros();
+            showNotification('Filtros limpiados', 'info');
+        }
+
+        // ===== INICIALIZACIÓN =====
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarEstadoSidebar();
+
+            // Event listeners de filtros
+            document.getElementById('filtroAnio').addEventListener('change', () => {
+                const year = Number(document.getElementById('filtroAnio').value || new Date().getFullYear());
+                if (!document.getElementById('filtroMes').value) {
+                    document.getElementById('fechaInicio').value = `${year}-01-01`;
+                    document.getElementById('fechaFin').value = `${year}-12-31`;
+                }
+                cargarDatosCompletos();
+            });
+
+            document.getElementById('filtroMes').addEventListener('change', () => {
+                const year = Number(document.getElementById('filtroAnio').value || new Date().getFullYear());
+                const month = Number(document.getElementById('filtroMes').value || 0);
+                if (month) {
+                    const startDate = new Date(year, month - 1, 1);
+                    const endDate = new Date(year, month, 0);
+                    document.getElementById('fechaInicio').value = startDate.toISOString().slice(0, 10);
+                    document.getElementById('fechaFin').value = endDate.toISOString().slice(0, 10);
+                } else {
+                    document.getElementById('fechaInicio').value = `${year}-01-01`;
+                    document.getElementById('fechaFin').value = `${year}-12-31`;
+                }
+                cargarDatosCompletos();
+            });
+
+            // Quick filters
+            document.querySelectorAll('[data-rapido]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setQuickFilter(this.dataset.rapido);
+                });
+            });
+
+            // Botones principales
+            document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltros);
+            document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarFiltros);
+            document.getElementById('btnPdfReporte').addEventListener('click', exportarPdfReporte);
+            document.getElementById('btnExcelReporte').addEventListener('click', exportarExcelReporte);
+            document.getElementById('btnRecargarDatos').addEventListener('click', () => {
+                cargarDatosCompletos();
+            });
+            document.getElementById('btnImprimirTabla').addEventListener('click', imprimirTabla);
+
+            // Modal
+            document.getElementById('cerrarDetalle').addEventListener('click', cerrarDetalleProveedor);
+            document.getElementById('detalleModal').addEventListener('click', (event) => {
+                if (event.target.id === 'detalleModal') cerrarDetalleProveedor();
+            });
+
+            // Ajustar enlace de "Inicio" según el rol
+            const rol = sessionStorage.getItem('rol');
+            const inicioLink = document.querySelector('.nav-item[href="/"]');
+            if (inicioLink && rol) {
+                inicioLink.setAttribute('href', rol === 'admin' ? '/inicio' : '/prueba');
+            }
+
+            // Inicializar
+            setDefaultFilters();
+            cargarProveedoresFiltro().then(() => {
+                cargarDatosCompletos();
+            });
+
+            // Teclado
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F5') {
+                    e.preventDefault();
+                    cargarDatosCompletos();
+                }
+                if (e.key === 'Escape') {
+                    cerrarDetalleProveedor();
+                }
+                if (e.ctrlKey && e.key === 'p') {
+                    e.preventDefault();
+                    imprimirTabla();
+                }
+                if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    exportarExcelReporte();
+                }
+            });
+
+            // Redimensionar gráficos
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (charts.mensual) charts.mensual.resize();
+                    if (charts.providers) charts.providers.resize();
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>

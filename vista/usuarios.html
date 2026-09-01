@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes y Proveedores - Agrovet Yacuanquer</title>
+    <link rel="icon" type="image/png" href="/imagenes/Logo.png">
     <style>
         :root {
             --teal: #1F8A86;
@@ -124,6 +125,7 @@
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; border-radius: 12px; width: 95%; max-width: 1400px; height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        #historialProveedorModal .modal-content { width: 98%; max-width: 1750px; height: 94vh; }
         .modal-content.small { max-width: 600px; height: auto; min-height: auto; }
         .modal-header { background: linear-gradient(135deg, var(--teal) 0%, #1a7572 100%); color: white; padding: 20px 30px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .modal-title { font-size: 24px; font-weight: 600; display: flex; align-items: center; gap: 12px; }
@@ -225,15 +227,16 @@
     
     <div class="sidebar" id="sidebar">
         <button class="toggle-sidebar-btn" id="toggleSidebar"><i class="fas fa-chevron-left"></i></button>
-        <div class="logo-container"><div class="logo"><span class="logo-agro">AGRO</span><span class="logo-vet">VET</span></div><div class="slogan">Yacuanquer - Sistema POS</div></div>
+        <div class="logo-container"><div class="logo"><img src="/imagenes/Logo.png" alt="AgroVet" style="width: 150px; max-height: 52px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.15));"></div><div class="slogan">Yacuanquer - Sistema POS</div></div>
         <nav class="nav-menu">
-            <a href="/" class="nav-item"><i class="nav-icon fas fa-home"></i><span class="nav-text">Inicio</span></a>
+            <a href="/inicio" class="nav-item"><i class="nav-icon fas fa-home"></i><span class="nav-text">Inicio</span></a>
             <a href="/venta" class="nav-item"><i class="nav-icon fas fa-cash-register"></i><span class="nav-text">Nueva Venta</span></a>
             <a href="/productos" class="nav-item"><i class="nav-icon fas fa-boxes"></i><span class="nav-text">Productos</span></a>
             <a href="/usuarios" class="nav-item active"><i class="nav-icon fas fa-users"></i><span class="nav-text">Clientes</span></a>
             <a href="/historial_venta" class="nav-item"><i class="nav-icon fas fa-history"></i><span class="nav-text">Historial</span></a>
             <a href="/inventario" class="nav-item"><i class="nav-icon fas fa-warehouse"></i><span class="nav-text">Inventario</span></a>
             <a href="/reporte_caja" class="nav-item"><i class="nav-icon fas fa-chart-bar"></i><span class="nav-text">Reportes</span></a>
+            <a href="/declaracion_renta" class="nav-item"><i class="nav-icon fas fa-file-invoice-dollar"></i><span class="nav-text">Declaración de Renta</span></a>
         </nav>
     </div>
     
@@ -264,7 +267,7 @@
     <!-- MODALES -->
     <div class="modal" id="historialClienteModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-history"></i><span id="historialClienteNombre">Historial de Ventas</span></h2><button class="close-modal" id="closeHistorialCliente"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="resumen-historico"><h3 style="color: var(--teal); margin-bottom: 15px;"><i class="fas fa-chart-line"></i> Resumen General</h3><div class="resumen-grid" id="resumenClienteGrid"></div></div><div class="historial-tabs"><button class="tab-historial-btn active" data-historial-tab="ventas"><i class="fas fa-shopping-cart"></i> Ventas</button><button class="tab-historial-btn" data-historial-tab="creditos"><i class="fas fa-file-invoice-dollar"></i> Créditos</button></div><div class="historial-tab-content active" id="ventasClienteTab"><div id="ventasClienteList" class="ventas-grid"></div></div><div class="historial-tab-content" id="creditosClienteTab" style="display: none;"><div id="creditosClienteList" class="creditos-grid"></div></div></div></div></div>
     
-    <div class="modal" id="historialProveedorModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-history"></i><span id="historialProveedorNombre">Historial de Compras</span></h2><button class="close-modal" id="closeHistorialProveedor"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="resumen-historico"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-chart-line"></i> Resumen General</h3><div class="resumen-grid" id="resumenProveedorGrid"></div></div><div class="compras-container"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-boxes"></i> Productos Suministrados</h3><div id="productosProveedorList"></div></div></div></div></div>
+    <div class="modal" id="historialProveedorModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-history"></i><span id="historialProveedorNombre">Historial de Compras</span></h2><button class="close-modal" id="closeHistorialProveedor"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="resumen-historico"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-chart-line"></i> Resumen General</h3><div class="resumen-grid" id="resumenProveedorGrid"></div></div><div class="compras-container" style="margin-top: 20px; padding: 16px; background: #fffaf8; border: 1px solid #f0ddd7; border-radius: 12px;"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-cart-plus"></i> Registrar Compra</h3><form id="formCompraProveedor"><input type="hidden" id="compraProveedorTelefono"><div class="form-row"><div class="form-group"><label class="form-label" for="compraProveedorProducto">Producto</label><select class="form-control" id="compraProveedorProducto" required></select></div><div class="form-group"><label class="form-label" for="compraProveedorFecha">Fecha</label><input type="date" class="form-control" id="compraProveedorFecha" required></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="compraProveedorCantidad">Cantidad</label><input type="number" class="form-control" id="compraProveedorCantidad" min="0.01" step="0.01" required></div><div class="form-group"><label class="form-label" for="compraProveedorCosto">Precio de costo</label><input type="number" class="form-control" id="compraProveedorCosto" min="0" step="0.01" required></div></div><div class="form-row"><div class="form-group"><label class="form-label" for="compraProveedorVenta">Precio de venta</label><input type="number" class="form-control" id="compraProveedorVenta" min="0" step="0.01"></div><div class="form-group"><label class="form-label" for="compraProveedorObservaciones">Observaciones</label><input type="text" class="form-control" id="compraProveedorObservaciones" placeholder="Factura, lote, nota..."></div></div><div style="display: flex; justify-content: flex-end;"><button type="submit" class="btn btn-warning"><i class="fas fa-save"></i> Guardar compra</button></div></form></div><div class="compras-container" style="margin-top: 20px;"><h3 style="color: var(--terracota); margin-bottom: 15px;"><i class="fas fa-boxes"></i> Productos Suministrados</h3><div id="productosProveedorList"></div></div></div></div></div>
     
     <div class="modal" id="creditosModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title"><i class="fas fa-file-invoice-dollar"></i><span id="creditosClienteNombre">Gestión de Créditos</span></h2><button class="close-modal" id="closeCreditosModal"><i class="fas fa-times"></i></button></div><div class="modal-body" id="creditosContent"></div></div></div>
     
@@ -513,8 +516,93 @@
         function cerrarModalProveedorCompleto() { document.getElementById('modalProveedorCompleto').style.display = 'none'; esEdicionProveedor = false; proveedorEditandoTelefono = null; document.getElementById('proveedorProductoBusqueda').value = ''; document.getElementById('proveedorProductoSugerencias').style.display = 'none'; }
         async function guardarProveedorCompleto() { try { const telefonoOriginal = document.getElementById('proveedorTelefonoOriginal').value, telefono = document.getElementById('proveedorTelefono').value, nombreEmpresa = document.getElementById('proveedorEmpresa').value, nombreProveedor = document.getElementById('proveedorNombre').value, correo = document.getElementById('proveedorCorreo').value, estado = document.getElementById('proveedorEstado').value, productos = (document.getElementById('proveedorProductos').value || '').split(',').map(v => Number(v.trim())).filter(Boolean); if (!telefono||!nombreEmpresa||!nombreProveedor) { showNotification('Teléfono, empresa y nombre son requeridos', 'error'); return; } const data = { telefono, nombre_empresa: nombreEmpresa, nombre_proveedor: nombreProveedor, correo: correo||null, estado, productos: productos }; let result; if (esEdicionProveedor && telefonoOriginal) result = await apiRequest(`/proveedor/${telefonoOriginal}`, 'PUT', data); else result = await apiRequest('/proveedor/completo', 'POST', data); if (result.success) { showNotification(result.message, 'success'); cerrarModalProveedorCompleto(); await cargarTodosProveedores(); currentPageProveedores = 1; if (tabActual !== 'proveedores') cambiarTab('proveedores'); } } catch(e) { showNotification('Error al guardar', 'error'); } }
         
-        async function verHistorialProveedor(telefono) { try { const r = await apiRequest(`/proveedor/${telefono}/historial`); if (r.success) { const h = r.historial; document.getElementById('historialProveedorNombre').textContent = `Historial - ${h.proveedor.nombre_empresa}`; document.getElementById('resumenProveedorGrid').innerHTML = `<div class="resumen-item"><div class="resumen-valor">${h.resumen.total_productos||0}</div><div class="resumen-label">Productos</div></div><div class="resumen-item"><div class="resumen-valor" style="color:${h.resumen.estado==='activo'?'var(--exito)':'var(--error)'}">${h.resumen.estado==='activo'?'Activo':'Inactivo'}</div><div class="resumen-label">Estado</div></div>`; const prodList = document.getElementById('productosProveedorList'); const productosAsignados = h.productos||[]; prodList.innerHTML = productosAsignados.length ? productosAsignados.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border-bottom:1px solid var(--gris-claro)"><span><i class="fas fa-box"></i> ${p.nombre}</span><button type="button" class="btn-icon btn-delete" title="Quitar producto" onclick="quitarProductoDelProveedor('${telefono}', ${p.id})"><i class="fas fa-unlink"></i></button></div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--gris-medio)"><i class="fas fa-boxes" style="font-size:48px;margin-bottom:10px"></i><p>No hay productos</p></div>'; document.getElementById('historialProveedorModal').style.display = 'flex'; } } catch(e) { showNotification('Error al cargar historial', 'error'); } }
+        function obtenerFechasFiltroProveedor() {
+            const mes = document.getElementById('historialProveedorMes')?.value;
+            const anio = document.getElementById('historialProveedorAnio')?.value;
+            if (!mes && !anio) return {};
+            const anioFiltro = Number(anio) || new Date().getFullYear();
+            if (!mes) return { fechaInicio: `${anioFiltro}-01-01`, fechaFin: `${anioFiltro}-12-31` };
+            const mesFiltro = mes || '01';
+            const ultimoDia = new Date(anioFiltro, Number(mesFiltro), 0).getDate();
+            return {
+                fechaInicio: `${anioFiltro}-${mesFiltro}-01`,
+                fechaFin: `${anioFiltro}-${mesFiltro}-${String(ultimoDia).padStart(2, '0')}`
+            };
+        }
+
+        function prepararCamposCompraProveedor() {
+            ['compraProveedorCosto', 'compraProveedorVenta'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) input.closest('.form-group')?.remove();
+                if (!document.getElementById(id)) {
+                    const oculto = document.createElement('input');
+                    oculto.type = 'hidden';
+                    oculto.id = id;
+                    oculto.value = '0';
+                    document.getElementById('formCompraProveedor')?.appendChild(oculto);
+                }
+            });
+            const contenedor = document.getElementById('historialProveedorModal');
+            if (contenedor && !document.getElementById('historialProveedorFechaInicio')) {
+                const controls = document.createElement('div');
+                controls.innerHTML = `
+                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; margin-bottom:6px;">
+                        <label style="font-size:12px; color:var(--gris-medio);">Filtrar fechas</label>
+                        <select class="form-control" id="historialProveedorMes" style="max-width: 150px;"><option value="">Todos los meses</option><option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option></select>
+                        <input type="number" class="form-control" id="historialProveedorAnio" min="2000" max="2100" step="1" placeholder="Año" style="max-width: 100px;">
+                        <input type="date" class="form-control" id="historialProveedorFechaInicio" style="max-width: 160px;">
+                        <input type="date" class="form-control" id="historialProveedorFechaFin" style="max-width: 160px;">
+                        <button type="button" class="btn btn-secondary" id="btnAplicarFiltroProveedorHistorial"><i class="fas fa-filter"></i> Aplicar</button>
+                        <button type="button" class="btn btn-secondary" id="btnLimpiarFiltroProveedorHistorial"><i class="fas fa-eraser"></i> Limpiar</button>
+                    </div>
+                `;
+                const resumen = contenedor.querySelector('.resumen-historico');
+                if (resumen) resumen.parentNode.insertBefore(controls.firstElementChild, resumen.nextSibling);
+            }
+
+            const prodContainer = document.getElementById('productosProveedorList');
+            if (contenedor && !prodContainer) {
+                const target = document.createElement('div');
+                target.id = 'productosProveedorList';
+                target.style.marginTop = '20px';
+                target.style.padding = '12px 0';
+                contenedor.querySelector('.modal-body')?.appendChild(target);
+            }
+
+            const listaProductos = document.getElementById('productosProveedorList');
+            if (listaProductos && !listaProductos.dataset.deleteActionsReady) {
+                listaProductos.dataset.deleteActionsReady = 'true';
+                const observer = new MutationObserver(() => {
+                    const filas = Array.from(listaProductos.children).slice(1);
+                    filas.forEach(fila => {
+                        if (fila.querySelector('.btn-quitar-producto')) return;
+                        const nombre = fila.querySelector('strong')?.textContent?.trim();
+                        const producto = (todosProductos || []).find(item => item.nombre === nombre);
+                        if (!producto) return;
+                        const boton = document.createElement('button');
+                        boton.type = 'button';
+                        boton.className = 'btn-icon-small btn-quitar-producto';
+                        boton.title = 'Quitar producto del proveedor';
+                        boton.innerHTML = '<i class="fas fa-trash"></i>';
+                        boton.dataset.productoId = producto.id;
+                        boton.style.cssText = 'border:0; background:transparent; color:var(--error); cursor:pointer; margin-left:8px;';
+                        fila.querySelector('strong')?.parentElement?.appendChild(boton);
+                    });
+                });
+                observer.observe(listaProductos, { childList: true });
+                listaProductos.addEventListener('click', event => {
+                    const boton = event.target.closest('.btn-quitar-producto');
+                    const telefono = document.getElementById('compraProveedorTelefono')?.value;
+                    if (boton && telefono) quitarProductoDelProveedor(telefono, boton.dataset.productoId);
+                });
+            }
+        }
+        
+        async function verHistorialProveedor(telefono, fechaInicio = null, fechaFin = null) { try { prepararCamposCompraProveedor(); const inicioInput = document.getElementById('historialProveedorFechaInicio'); const finInput = document.getElementById('historialProveedorFechaFin'); const fechaInicioValor = fechaInicio || (inicioInput ? inicioInput.value : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]); const fechaFinValor = fechaFin || (finInput ? finInput.value : new Date().toISOString().split('T')[0]); if (inicioInput) inicioInput.value = fechaInicioValor; if (finInput) finInput.value = fechaFinValor; const params = new URLSearchParams({ fecha_inicio: fechaInicioValor, fecha_fin: fechaFinValor }); const r = await apiRequest(`/proveedor/${telefono}/historial?${params.toString()}`); if (r.success) { const h = r.historial; document.getElementById('historialProveedorNombre').textContent = `Historial - ${h.proveedor.nombre_empresa}`; document.getElementById('resumenProveedorGrid').innerHTML = `<div class="resumen-item"><div class="resumen-valor">${h.resumen.total_productos||0}</div><div class="resumen-label">Productos</div></div><div class="resumen-item"><div class="resumen-valor" style="color:${h.resumen.estado==='activo'?'var(--exito)':'var(--error)'}">${h.resumen.estado==='activo'?'Activo':'Inactivo'}</div><div class="resumen-label">Estado</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_periodo || 0)}</div><div class="resumen-label">Gastado período</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_mes || 0)}</div><div class="resumen-label">Gastado mes</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_anio || 0)}</div><div class="resumen-label">Gastado año</div></div>`; const prodList = document.getElementById('productosProveedorList'); const productosAsignados = h.productos || []; const selectCompra = document.getElementById('compraProveedorProducto'); const currentTelefono = document.getElementById('compraProveedorTelefono'); currentTelefono.value = telefono; if (!productosAsignados.length) { selectCompra.innerHTML = '<option value="">Sin productos</option>'; } else { selectCompra.innerHTML = productosAsignados.map(p => `<option value="${p.id}">${p.nombre}</option>`).join(''); } const productoInicial = productosAsignados[0]; if (productoInicial) actualizarPrecioCompraProveedor(productoInicial.id); document.getElementById('compraProveedorFecha').value = fechaFinValor || new Date().toISOString().split('T')[0]; if (prodList) { prodList.innerHTML = productosAsignados.length ? `<div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.7fr;gap:8px;padding:10px 8px;border-bottom:1px solid #e9e2df;font-weight:700;color:#5f4338;font-size:12px;text-transform:uppercase;min-width:840px;"><div>Producto</div><div>Cant.</div><div>Cant/Mes</div><div>Cant/Año</div><div>Costo</div><div>Venta</div><div>Mes</div><div>Año</div><div>Acción</div></div>` + productosAsignados.map(p => `<div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.7fr;gap:8px;padding:12px 8px;border-bottom:1px solid #f0e5e1;align-items:center;min-width:840px;"><div><strong>${p.nombre}</strong><div style="font-size:12px;color:var(--gris-medio)">${p.categoria || 'Sin categoría'}</div></div><div>${Number(p.cantidad_total_periodo || 0).toFixed(2)}</div><div>${Number(p.cantidad_comprada_mes || 0).toFixed(2)}</div><div>${Number(p.cantidad_comprada_anio || 0).toFixed(2)}</div><div>${formatCurrency(p.precio_costo || 0)}</div><div>${formatCurrency(p.precio_venta || 0)}</div><div>${formatCurrency(p.costo_total_mes || 0)}</div><div>${formatCurrency(p.costo_total_anio || 0)}</div><div><button type="button" class="btn-icon-small btn-quitar-producto" data-producto-id="${p.id}" title="Quitar producto del proveedor" style="display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--error);cursor:pointer;padding:6px;border-radius:8px;min-width:32px;min-height:32px;"><i class="fas fa-trash"></i></button></div></div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--gris-medio)"><i class="fas fa-boxes" style="font-size:48px;margin-bottom:10px"></i><p>No hay productos</p></div>'; } document.getElementById('historialProveedorModal').style.display = 'flex'; } } catch(e) { showNotification('Error al cargar historial', 'error'); } }
+        function actualizarPrecioCompraProveedor(productoId) { const producto = (todosProductos || []).find(p => Number(p.id) === Number(productoId)); const costoInput = document.getElementById('compraProveedorCosto'); const ventaInput = document.getElementById('compraProveedorVenta'); if (!producto || !costoInput || !ventaInput) return; costoInput.value = Number(producto.precio_costo || 0); ventaInput.value = Number(producto.precio_venta || 0); }
         async function quitarProductoDelProveedor(telefono, productoId) { try { const r = await apiRequest(`/proveedor/${telefono}/productos/${productoId}`, 'DELETE'); if (!r.success) throw new Error(r.message || 'No se pudo quitar el producto'); showNotification('Producto quitado del proveedor', 'success'); await verHistorialProveedor(telefono); await cargarTodosProveedores(); } catch(e) { showNotification(e.message || 'Error al quitar producto', 'error'); } }
+        async function registrarCompraProveedorFormulario(e) { e.preventDefault(); const telefono = document.getElementById('compraProveedorTelefono').value; const producto_id = document.getElementById('compraProveedorProducto').value; const cantidad = document.getElementById('compraProveedorCantidad').value; const precio_costo = document.getElementById('compraProveedorCosto').value; const precio_venta = document.getElementById('compraProveedorVenta').value; const fecha_compra = document.getElementById('compraProveedorFecha').value; const observaciones = document.getElementById('compraProveedorObservaciones').value; if (!telefono || !producto_id || !cantidad || !fecha_compra) { showNotification('Completa producto, cantidad y fecha', 'error'); return; }
+            try { const result = await apiRequest(`/proveedor/${telefono}/compra`, 'POST', { producto_id: Number(producto_id), cantidad: Number(cantidad), precio_costo: Number(precio_costo || 0), precio_venta: precio_venta ? Number(precio_venta) : null, fecha_compra, observaciones }); if (!result.success) throw new Error(result.message || 'No se pudo guardar la compra'); showNotification('Compra registrada correctamente', 'success'); document.getElementById('formCompraProveedor').reset(); document.getElementById('compraProveedorFecha').value = new Date().toISOString().split('T')[0]; const product = (todosProductos || []).find(p => Number(p.id) === Number(producto_id)); if (product) { document.getElementById('compraProveedorCosto').value = Number(product.precio_costo || 0); document.getElementById('compraProveedorVenta').value = Number(product.precio_venta || 0); } await verHistorialProveedor(telefono); await cargarTodosProveedores(); } catch (e) { showNotification(e.message || 'No se pudo guardar la compra', 'error'); } }
         
         function abrirModalVentaManual(cedula, nombre) { document.getElementById('ventaManualClienteCedula').value = cedula; document.getElementById('ventaManualClienteNombre').value = nombre; document.getElementById('modalVentaManualTitulo').textContent = `Venta Manual - ${nombre}`; document.getElementById('ventaManualFecha').value = new Date().toISOString().split('T')[0]; document.getElementById('ventaManualTotal').value = ''; document.getElementById('ventaManualAnticipo').value = '0'; document.getElementById('ventaManualDiasCredito').value = '30'; document.getElementById('ventaManualObservaciones').value = ''; document.getElementById('productosVentaManualContainer').innerHTML = `<div class="producto-item"><div style="display:flex;gap:10px;align-items:center"><div class="producto-input-container"><input type="text" class="producto-input" placeholder="Nombre del producto (opcional)" oninput="buscarProductosSugeridos(this)"><div class="sugerencias-productos"></div></div><input type="number" class="cantidad-input" placeholder="Cantidad" min="1" value="1"><button type="button" class="btn-eliminar-producto" onclick="eliminarProductoVentaManual(this)"><i class="fas fa-times"></i></button></div></div>`; cargarTodosProductos(); document.getElementById('modalVentaManual').style.display = 'flex'; }
         function cerrarModalVentaManual() { document.getElementById('modalVentaManual').style.display = 'none'; }
@@ -539,6 +627,27 @@
             document.getElementById('btnNuevoProveedor').addEventListener('click', nuevoProveedor);
             inicializarSelectorProductosProveedor();
             document.getElementById('formProveedorCompleto').addEventListener('submit', e => { e.preventDefault(); guardarProveedorCompleto(); });
+            prepararCamposCompraProveedor();
+            document.getElementById('formCompraProveedor').addEventListener('submit', registrarCompraProveedorFormulario);
+            document.getElementById('compraProveedorProducto').addEventListener('change', (e) => actualizarPrecioCompraProveedor(e.target.value));
+            const filtroBtn = document.getElementById('btnAplicarFiltroProveedorHistorial');
+            if (filtroBtn) {
+                filtroBtn.addEventListener('click', () => { const telefono = document.getElementById('compraProveedorTelefono').value; if (telefono) { const fechaInicio = document.getElementById('historialProveedorFechaInicio').value; const fechaFin = document.getElementById('historialProveedorFechaFin').value; verHistorialProveedor(telefono, fechaInicio, fechaFin); } });
+            }
+            const limpiarFiltroBtn = document.getElementById('btnLimpiarFiltroProveedorHistorial');
+            if (limpiarFiltroBtn) limpiarFiltroBtn.addEventListener('click', () => {
+                document.getElementById('historialProveedorMes').value = '';
+                document.getElementById('historialProveedorAnio').value = '';
+                document.getElementById('historialProveedorFechaInicio').value = '';
+                document.getElementById('historialProveedorFechaFin').value = '';
+                const telefono = document.getElementById('compraProveedorTelefono').value;
+                if (telefono) verHistorialProveedor(telefono);
+            });
+            ['historialProveedorMes', 'historialProveedorAnio'].forEach(id => document.getElementById(id)?.addEventListener('change', () => {
+                const telefono = document.getElementById('compraProveedorTelefono').value;
+                const fechas = obtenerFechasFiltroProveedor();
+                if (telefono && fechas.fechaInicio) verHistorialProveedor(telefono, fechas.fechaInicio, fechas.fechaFin);
+            }));
             document.getElementById('formVentaManual').addEventListener('submit', e => { e.preventDefault(); registrarVentaManual(); });
             document.getElementById('formAbono').addEventListener('submit', procesarAbono);
             document.getElementById('formEditarCredito').addEventListener('submit', async e => { e.preventDefault(); try { const id = document.getElementById('creditoId').value; await apiRequest(`/credito/${id}`, 'PUT', { anticipo: parseFloat(document.getElementById('creditoAnticipo').value), saldo_pendiente: parseFloat(document.getElementById('creditoSaldo').value), dias_credito: parseInt(document.getElementById('creditoDias').value), fecha_vencimiento: document.getElementById('creditoVencimiento').value, estado: document.getElementById('creditoEstado').value, abonos_realizados: parseFloat(document.getElementById('creditoAbonos').value), ultimo_pago: document.getElementById('creditoUltimoPago').value||null, observaciones: document.getElementById('creditoObservaciones').value, fecha_venta: document.getElementById('creditoFechaVenta').value }); showNotification('Crédito actualizado', 'success'); document.getElementById('editarCreditoModal').style.display = 'none'; if (elementoHistorial?.tipo === 'cliente') await verHistorialCliente(elementoHistorial.cliente.cedula); } catch(e) { showNotification(e.message, 'error'); } });
@@ -561,6 +670,7 @@
             cargarTodosProductos();
             
             window.generarFacturaCredito = generarFacturaCredito; window.generarComprobanteAbono = generarComprobanteAbono; window.registrarAbonoCredito = registrarAbonoCredito;
+            window.registrarCompraProveedorFormulario = registrarCompraProveedorFormulario;
             window.solicitarEliminarVenta = solicitarEliminarVenta; window.solicitarEliminarCredito = solicitarEliminarCredito; window.verHistorialCliente = verHistorialCliente;
             window.verCreditosCliente = verCreditosCliente; window.editarCliente = editarCliente; window.guardarCliente = guardarCliente; window.cancelarEdicionCliente = cancelarEdicionCliente;
             window.solicitarEliminar = solicitarEliminar; window.abrirModalVentaManual = abrirModalVentaManual; window.editarProveedorCompleto = editarProveedorCompleto;

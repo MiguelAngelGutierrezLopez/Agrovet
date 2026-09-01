@@ -1003,11 +1003,13 @@ def eliminar_proveedor(telefono):
 
 @cliente_proveedor_bp.route('/proveedor/<telefono>/historial', methods=['GET'])
 def obtener_historial_proveedor(telefono):
-    """Obtener historial completo de un proveedor"""
+    """Obtener historial completo de un proveedor con filtros por fechas."""
     try:
-        logger.info(f"Solicitando historial del proveedor: {telefono}")
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+        logger.info(f"Solicitando historial del proveedor: {telefono} | inicio={fecha_inicio} | fin={fecha_fin}")
         
-        historial = ClienteProveedorModel.obtener_historial_proveedor(telefono)
+        historial = ClienteProveedorModel.obtener_historial_proveedor(telefono, fecha_inicio, fecha_fin)
         
         if historial:
             return jsonify({
@@ -1025,6 +1027,79 @@ def obtener_historial_proveedor(telefono):
         return jsonify({
             'success': False,
             'message': f"Error al obtener historial: {str(e)}"
+        }), 500
+
+@cliente_proveedor_bp.route('/declaracion-renta/resumen', methods=['GET'])
+def obtener_resumen_declaracion_renta():
+    """Resumen global de compras a proveedores para preparación de declaración de renta."""
+    try:
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+        proveedor_telefono = request.args.get('proveedor_telefono')
+
+        resumen = ClienteProveedorModel.obtener_declaracion_renta_resumen(
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            proveedor_telefono=proveedor_telefono
+        )
+
+        return jsonify({
+            'success': True,
+            'data': resumen
+        })
+    except Exception as e:
+        logger.error(f"Error al obtener resumen de declaración renta: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f"Error al obtener resumen fiscal: {str(e)}"
+        }), 500
+
+@cliente_proveedor_bp.route('/declaracion-renta/proveedores', methods=['GET'])
+def obtener_proveedores_declaracion_renta():
+    """Lista consolidada por proveedor para el módulo de declaración de renta."""
+    try:
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+        proveedores = ClienteProveedorModel.obtener_declaracion_renta_proveedores(
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin
+        )
+
+        return jsonify({
+            'success': True,
+            'proveedores': proveedores
+        })
+    except Exception as e:
+        logger.error(f"Error al obtener proveedores de declaración renta: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f"Error al obtener proveedores: {str(e)}",
+            'proveedores': []
+        }), 500
+
+@cliente_proveedor_bp.route('/declaracion-renta/proveedor/<telefono>/detalle', methods=['GET'])
+def obtener_detalle_proveedor_declaracion_renta(telefono):
+    """Detalle de compras por proveedor dentro del período fiscal."""
+    try:
+        fecha_inicio = request.args.get('fecha_inicio')
+        fecha_fin = request.args.get('fecha_fin')
+
+        detalle = ClienteProveedorModel.obtener_declaracion_renta_detalle_proveedor(
+            telefono=telefono,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin
+        )
+
+        return jsonify({
+            'success': True,
+            'data': detalle
+        })
+    except Exception as e:
+        logger.error(f"Error al obtener detalle del proveedor {telefono}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f"Error al consultar detalle del proveedor: {str(e)}",
+            'data': {}
         }), 500
 
 # ===== NUEVAS RUTAS PARA GESTIÓN DE PRODUCTOS DE PROVEEDORES =====
@@ -1062,7 +1137,7 @@ def obtener_productos_proveedor(telefono):
         
         # Usar tabla junction proveedor_productos para obtener los productos
         sql = """
-        SELECT p.id, p.nombre, p.categoria, p.presentacion, p.precio_costo
+        SELECT p.id, p.nombre, p.categoria, p.presentacion, p.precio_costo, p.precio_venta
         FROM productos p
         INNER JOIN proveedor_productos pp ON p.id = pp.producto_id
         WHERE pp.proveedor_telefono = %s
@@ -1130,6 +1205,38 @@ def asignar_productos_proveedor(telefono):
             'success': False,
             'message': f"Error al asignar productos: {str(e)}"
         }), 500
+
+@cliente_proveedor_bp.route('/proveedor/<telefono>/compra', methods=['POST'])
+def registrar_compra_proveedor(telefono):
+    """Registrar una compra de un producto a un proveedor."""
+    try:
+        data = request.get_json(silent=True) or {}
+        if not data:
+            return jsonify({'success': False, 'message': 'No se recibieron datos'}), 400
+
+        producto_id = data.get('producto_id')
+        cantidad = data.get('cantidad')
+        precio_costo = data.get('precio_costo')
+        precio_venta = data.get('precio_venta')
+        fecha_compra = data.get('fecha_compra')
+        observaciones = data.get('observaciones')
+
+        success, message = ClienteProveedorModel.registrar_compra_proveedor(
+            telefono,
+            producto_id,
+            cantidad,
+            precio_costo,
+            precio_venta,
+            fecha_compra,
+            observaciones
+        )
+
+        if success:
+            return jsonify({'success': True, 'message': message})
+        return jsonify({'success': False, 'message': message}), 400
+    except Exception as e:
+        logger.error(f"Error al registrar compra del proveedor {telefono}: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error al registrar compra: {str(e)}'}), 500
 
 @cliente_proveedor_bp.route('/proveedor/<telefono>/productos/<int:producto_id>', methods=['DELETE'])
 def quitar_producto_proveedor(telefono, producto_id):

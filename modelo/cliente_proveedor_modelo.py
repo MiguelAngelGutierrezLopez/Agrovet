@@ -33,6 +33,44 @@ def serializar_datos(datos):
         return convertir_a_serializable(datos)
 
 class ClienteProveedorModel:
+
+    @staticmethod
+    def ensure_compras_proveedor_table():
+        """Crear la tabla de compras por proveedor si no existe."""
+        conn = None
+        cursor = None
+        try:
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS compras_proveedor (
+                    id INT NOT NULL AUTO_INCREMENT,
+                    proveedor_telefono VARCHAR(15) NOT NULL,
+                    producto_id INT NOT NULL,
+                    fecha_compra DATE NOT NULL,
+                    cantidad DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                    precio_costo_unitario DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                    precio_venta_unitario DECIMAL(12,2) DEFAULT 0.00,
+                    total_compra DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                    observaciones TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (id),
+                    KEY idx_proveedor_fecha (proveedor_telefono, fecha_compra),
+                    KEY idx_producto (producto_id),
+                    CONSTRAINT fk_compras_proveedor FOREIGN KEY (proveedor_telefono) REFERENCES proveedor (telefono) ON UPDATE CASCADE ON DELETE CASCADE,
+                    CONSTRAINT fk_compras_producto FOREIGN KEY (producto_id) REFERENCES productos (id) ON UPDATE CASCADE ON DELETE RESTRICT
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+            """)
+            conn.commit()
+            return True
+        except Exception as e:
+            logger.error(f"Error creando tabla compras_proveedor: {str(e)}")
+            return False
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
     
     @staticmethod
     def _normalizar_productos_ids(productos):
@@ -1600,45 +1638,125 @@ class ClienteProveedorModel:
                 conn.close()
     
     @staticmethod
-    def obtener_historial_proveedor(telefono):
-        """Obtener historial completo de un proveedor"""
+    def obtener_historial_proveedor(telefono, fecha_inicio=None, fecha_fin=None):
+        """Obtener historial completo de un proveedor con métricas por producto y filtro por fechas."""
         conn = None
         cursor = None
         try:
+            ClienteProveedorModel.ensure_compras_proveedor_table()
             conn = db.get_connection()
             cursor = conn.cursor(dictionary=True)
-            
-            # Obtener información básica del proveedor
+
             proveedor_info = ClienteProveedorModel.obtener_proveedor_por_telefono(telefono)
             if not proveedor_info:
                 return None
-            
-            # Obtener IDs y nombres para permitir quitar productos individualmente.
+
+            fecha_fin_obj = datetime.strptime(fecha_fin, '%Y-%m-%d').date() if fecha_fin else date.today()
+            fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d').date() if fecha_inicio else fecha_fin_obj.replace(day=1)
+            if fecha_inicio_obj > fecha_fin_obj:
+                fecha_inicio_obj, fecha_fin_obj = fecha_fin_obj, fecha_inicio_obj
+
+            mes_inicio = fecha_fin_obj.replace(day=1)
+            mes_fin = fecha_fin_obj
+            anio_inicio = date(fecha_fin_obj.year, 1, 1)
+            anio_fin = date(fecha_fin_obj.year, 12, 31)
+
             sql_productos = """
-            SELECT p.id, p.nombre
-            FROM productos p
-            WHERE p.proveedor = %s
-            ORDER BY p.nombre
+                SELECT p.id,
+                       p.nombre,
+                       p.categoria,
+                       p.presentacion,
+                       p.precio_costo,
+                       p.precio_venta,
+                       COALESCE(SUM(CASE
+                           WHEN cp.fecha_compra BETWEEN %s AND %s THEN cp.cantidad
+                           ELSE 0
+                       END), 0) AS cantidad_total_periodo,
+                       COALESCE(SUM(CASE
+                           WHEN cp.fecha_compra BETWEEN %s AND %s THEN cp.total_compra
+                           ELSE 0
+                       END), 0) AS costo_total_periodo,
+                       COUNT(CASE
+                           WHEN cp.fecha_compra >= %s AND cp.fecha_compra <= %s THEN 1
+                       END) AS cantidad_comprada_mes,
+                       COALESCE(SUM(CASE
+                           WHEN cp.fecha_compra >= %s AND cp.fecha_compra <= %s THEN cp.total_compra
+                           ELSE 0
+                       END), 0) AS costo_total_mes,
+                       COUNT(CASE
+                           WHEN cp.fecha_compra >= %s AND cp.fecha_compra <= %s THEN 1
+                       END) AS cantidad_comprada_anio,
+                       COALESCE(SUM(CASE
+                           WHEN cp.fecha_compra >= %s AND cp.fecha_compra <= %s THEN cp.total_compra
+                           ELSE 0
+                       END), 0) AS costo_total_anio,
+                       COALESCE(MAX(cp.fecha_compra), NULL) AS ultima_compra
+                FROM productos p
+                LEFT JOIN compras_proveedor cp
+                    ON cp.producto_id = p.id
+                   AND cp.proveedor_telefono = %s
+                WHERE p.proveedor = %s
+                   OR EXISTS (
+                       SELECT 1
+                       FROM proveedor_productos pp
+                       WHERE pp.producto_id = p.id
+                         AND pp.proveedor_telefono = %s
+                   )
+                GROUP BY p.id, p.nombre, p.categoria, p.presentacion, p.precio_costo, p.precio_venta
+                ORDER BY p.nombre
             """
-            
-            cursor.execute(sql_productos, (telefono,))
+
+            params = (
+                fecha_inicio_obj.isoformat(), fecha_fin_obj.isoformat(),
+                fecha_inicio_obj.isoformat(), fecha_fin_obj.isoformat(),
+                mes_inicio.isoformat(), mes_fin.isoformat(),
+                mes_inicio.isoformat(), mes_fin.isoformat(),
+                anio_inicio.isoformat(), anio_fin.isoformat(),
+                anio_inicio.isoformat(), anio_fin.isoformat(),
+                telefono, telefono, telefono
+            )
+            cursor.execute(sql_productos, params)
             productos = cursor.fetchall()
-            
-            # Solo necesitamos los nombres
-            nombres_productos = [p['nombre'] for p in productos]
-            
+
+            for producto in productos:
+                producto['cantidad_total_periodo'] = float(producto.get('cantidad_total_periodo') or 0)
+                producto['cantidad_comprada_mes'] = float(producto.get('cantidad_comprada_mes') or 0)
+                producto['cantidad_comprada_anio'] = float(producto.get('cantidad_comprada_anio') or 0)
+                producto['costo_total_periodo'] = float(producto.get('costo_total_periodo') or 0)
+                producto['costo_total_mes'] = float(producto.get('costo_total_mes') or 0)
+                producto['costo_total_anio'] = float(producto.get('costo_total_anio') or 0)
+                producto['precio_costo'] = float(producto.get('precio_costo') or 0)
+                producto['precio_venta'] = float(producto.get('precio_venta') or 0)
+                producto['margen_estimado'] = producto['precio_venta'] - producto['precio_costo']
+                producto['margen_total_estimado'] = producto['margen_estimado'] * producto['cantidad_total_periodo']
+
+            total_periodo = sum(float(p.get('costo_total_periodo') or 0) for p in productos)
+            total_mes = sum(float(p.get('costo_total_mes') or 0) for p in productos)
+            total_anio = sum(float(p.get('costo_total_anio') or 0) for p in productos)
+            cantidad_periodo = sum(float(p.get('cantidad_total_periodo') or 0) for p in productos)
+            cantidad_mes = sum(float(p.get('cantidad_comprada_mes') or 0) for p in productos)
+            cantidad_anio = sum(float(p.get('cantidad_comprada_anio') or 0) for p in productos)
+
             historial = {
                 'proveedor': proveedor_info,
-                'productos': productos,
-                'productos_nombres': nombres_productos,
+                'productos': serializar_datos(productos),
+                'productos_nombres': [p['nombre'] for p in productos],
                 'resumen': {
-                    'total_productos': len(nombres_productos),
-                    'estado': proveedor_info.get('estado', 'activo')
+                    'total_productos': len(productos),
+                    'estado': proveedor_info.get('estado', 'activo'),
+                    'cantidad_total_periodo': cantidad_periodo,
+                    'cantidad_comprada_mes': cantidad_mes,
+                    'cantidad_comprada_anio': cantidad_anio,
+                    'total_gastado_periodo': total_periodo,
+                    'total_gastado_mes': total_mes,
+                    'total_gastado_anio': total_anio,
+                    'fecha_inicio': fecha_inicio_obj.isoformat(),
+                    'fecha_fin': fecha_fin_obj.isoformat(),
                 }
             }
-            
+
             return serializar_datos(historial)
-            
+
         except Exception as e:
             logger.error(f"Error en obtener_historial_proveedor: {str(e)}")
             return None
@@ -1646,6 +1764,395 @@ class ClienteProveedorModel:
             if cursor:
                 cursor.close()
             if conn:
+                conn.close()
+
+    @staticmethod
+    def registrar_compra_proveedor(telefono_proveedor, producto_id, cantidad, precio_costo=None, precio_venta=None, fecha_compra=None, observaciones=None):
+        """Registrar compra de un producto a un proveedor usando los precios actuales del producto."""
+        try:
+            ClienteProveedorModel.ensure_compras_proveedor_table()
+            if not telefono_proveedor or not producto_id:
+                return False, 'Faltan datos del proveedor o del producto'
+
+            cantidad = float(cantidad or 0)
+            if cantidad <= 0:
+                return False, 'La cantidad debe ser mayor a cero'
+
+            fecha_compra = fecha_compra or date.today().isoformat()
+
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            cursor.execute(
+                """
+                SELECT p.id, p.nombre, p.proveedor, p.precio_costo, p.precio_venta
+                FROM productos p
+                WHERE p.id = %s
+                """,
+                (producto_id,)
+            )
+            producto = cursor.fetchone()
+            if not producto:
+                return False, 'No existe el producto indicado'
+
+            if producto.get('proveedor') and producto.get('proveedor') != telefono_proveedor:
+                cursor.execute(
+                    "SELECT 1 FROM proveedor_productos WHERE proveedor_telefono = %s AND producto_id = %s",
+                    (telefono_proveedor, producto_id)
+                )
+                if cursor.fetchone() is None:
+                    return False, 'El producto no está asociado a este proveedor'
+
+            precio_costo_actual = float(producto.get('precio_costo') or 0)
+            precio_venta_actual = float(producto.get('precio_venta') or 0)
+            total_compra = cantidad * precio_costo_actual
+
+            cursor.execute(
+                """
+                INSERT INTO compras_proveedor (
+                    proveedor_telefono, producto_id, fecha_compra, cantidad,
+                    precio_costo_unitario, precio_venta_unitario, total_compra,
+                    observaciones
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    telefono_proveedor,
+                    producto_id,
+                    fecha_compra,
+                    cantidad,
+                    precio_costo_actual,
+                    precio_venta_actual,
+                    total_compra,
+                    observaciones
+                )
+            )
+
+            conn.commit()
+            return True, 'Compra del proveedor registrada correctamente'
+        except Exception as e:
+            logger.error(f"Error registrando compra del proveedor {telefono_proveedor}: {str(e)}")
+            return False, f"Error al registrar la compra: {str(e)}"
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if 'conn' in locals() and conn:
+                conn.close()
+
+    @staticmethod
+    def obtener_declaracion_renta_resumen(fecha_inicio=None, fecha_fin=None, proveedor_telefono=None):
+        """Resumen fiscal completo del negocio para declaración de renta.
+
+        Combina las fuentes financieras relevantes del sistema:
+        - ventas y detalle_venta para ingresos y costo de ventas
+        - compras_proveedor para gastos de proveedores
+        - creditos y abonos para cartera y cobros
+        - reporte_caja para caja y egresos operativos
+        """
+        conn = None
+        cursor = None
+        try:
+            ClienteProveedorModel.ensure_compras_proveedor_table()
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            if not fecha_fin:
+                fecha_fin = date.today().isoformat()
+            if not fecha_inicio:
+                fecha_inicio = date.today().replace(day=1).isoformat()
+
+            filtro_ventas = " WHERE v.fecha_dia BETWEEN %s AND %s "
+            params_ventas = [fecha_inicio, fecha_fin]
+            if proveedor_telefono:
+                filtro_ventas += " AND v.cliente_cedula = %s "
+                params_ventas.append(proveedor_telefono)
+
+            query_ventas = f"""
+                SELECT
+                    COALESCE(SUM(v.total), 0) AS ingresos_brutos,
+                    COALESCE(SUM(CASE WHEN v.tipo_pago != 'CRÉDITO' THEN v.total ELSE 0 END), 0) AS ventas_contado,
+                    COALESCE(SUM(CASE WHEN v.tipo_pago = 'CRÉDITO' THEN v.total ELSE 0 END), 0) AS ventas_credito,
+                    COALESCE(SUM(CASE WHEN c.anticipo IS NOT NULL THEN c.anticipo ELSE 0 END), 0) AS anticipos,
+                    COALESCE(SUM(CASE WHEN c.abonos_realizados IS NOT NULL THEN c.abonos_realizados ELSE 0 END), 0) AS abonos_cobrados,
+                    COALESCE(SUM(CASE WHEN c.saldo_pendiente IS NOT NULL THEN c.saldo_pendiente ELSE 0 END), 0) AS saldo_pendiente,
+                    COUNT(DISTINCT v.id) AS total_ventas
+                FROM ventas v
+                LEFT JOIN creditos c ON c.venta_id = v.id
+                {filtro_ventas}
+            """
+            cursor.execute(query_ventas, tuple(params_ventas))
+            ventas_summary = cursor.fetchone() or {}
+
+            filtro_costo = " WHERE v.fecha_dia BETWEEN %s AND %s "
+            params_costo = [fecha_inicio, fecha_fin]
+            if proveedor_telefono:
+                filtro_costo += " AND v.cliente_cedula = %s "
+                params_costo.append(proveedor_telefono)
+
+            query_costo = f"""
+                SELECT
+                    COALESCE(SUM(dv.cantidad_vendida * p.precio_costo), 0) AS costo_ventas
+                FROM detalle_venta dv
+                JOIN productos p ON p.id = dv.id_producto
+                JOIN ventas v ON v.id = dv.id_venta
+                {filtro_costo}
+            """
+            cursor.execute(query_costo, tuple(params_costo))
+            costo_ventas = cursor.fetchone() or {}
+
+            filtro_compra = " WHERE cp.fecha_compra BETWEEN %s AND %s "
+            params_compra = [fecha_inicio, fecha_fin]
+            if proveedor_telefono:
+                filtro_compra += " AND cp.proveedor_telefono = %s "
+                params_compra.append(proveedor_telefono)
+
+            query_compras = f"""
+                SELECT
+                    COALESCE(SUM(cp.total_compra), 0) AS gastos_totales,
+                    COALESCE(COUNT(DISTINCT cp.proveedor_telefono), 0) AS total_proveedores,
+                    COALESCE(COUNT(cp.id), 0) AS total_compras,
+                    COALESCE(SUM(CASE WHEN cp.precio_venta_unitario IS NOT NULL THEN cp.cantidad * (cp.precio_venta_unitario - cp.precio_costo_unitario) ELSE 0 END), 0) AS margen_estimado,
+                    COALESCE(SUM(CASE WHEN cp.precio_costo_unitario > 0 THEN cp.cantidad * cp.precio_costo_unitario ELSE 0 END), 0) AS base_gasto
+                FROM compras_proveedor cp
+                {filtro_compra}
+            """
+            cursor.execute(query_compras, tuple(params_compra))
+            compras_summary = cursor.fetchone() or {}
+
+            query_caja = """
+                SELECT
+                    COALESCE(SUM(egresos), 0) AS egresos_caja,
+                    COALESCE(SUM(ingresos), 0) AS ingresos_caja
+                FROM reporte_caja
+                WHERE DATE(fecha_egreso) BETWEEN %s AND %s OR DATE(fecha_ingreso) BETWEEN %s AND %s
+            """
+            cursor.execute(query_caja, (fecha_inicio, fecha_fin, fecha_inicio, fecha_fin))
+            caja_summary = cursor.fetchone() or {}
+
+            query_por_mes = f"""
+                SELECT MONTH(cp.fecha_compra) AS mes, COALESCE(SUM(cp.total_compra), 0) AS total
+                FROM compras_proveedor cp
+                {filtro_compra}
+                GROUP BY MONTH(cp.fecha_compra)
+                ORDER BY MONTH(cp.fecha_compra)
+            """
+            cursor.execute(query_por_mes, tuple(params_compra))
+            por_mes = cursor.fetchall() or []
+
+            query_top_proveedores = f"""
+                SELECT cp.proveedor_telefono, p.nombre_empresa, p.nombre_proveedor,
+                       COALESCE(SUM(cp.total_compra), 0) AS total_compra
+                FROM compras_proveedor cp
+                LEFT JOIN proveedor p ON p.telefono = cp.proveedor_telefono
+                {filtro_compra}
+                GROUP BY cp.proveedor_telefono, p.nombre_empresa, p.nombre_proveedor
+                ORDER BY total_compra DESC
+                LIMIT 10
+            """
+            cursor.execute(query_top_proveedores, tuple(params_compra))
+            top_proveedores = cursor.fetchall() or []
+
+            ingreso_bruto = float(ventas_summary.get('ingresos_brutos') or 0)
+            venta_contado = float(ventas_summary.get('ventas_contado') or 0)
+            venta_credito = float(ventas_summary.get('ventas_credito') or 0)
+            anticipos = float(ventas_summary.get('anticipos') or 0)
+            abonos_cobrados = float(ventas_summary.get('abonos_cobrados') or 0)
+            saldo_pendiente = float(ventas_summary.get('saldo_pendiente') or 0)
+            costo_ventas_total = float(costo_ventas.get('costo_ventas') or 0)
+            gastos_totales = float(compras_summary.get('gastos_totales') or 0)
+            egresos_caja = float(caja_summary.get('egresos_caja') or 0)
+            ingresos_caja = float(caja_summary.get('ingresos_caja') or 0)
+            utilidad_bruta = ingreso_bruto - costo_ventas_total
+            utilidad_neta = utilidad_bruta - gastos_totales
+            empresa_egresos = gastos_totales + egresos_caja
+            total_iva_soportado = round(gastos_totales * 0.19, 2)
+
+            mes_actual = date.today().replace(day=1)
+            total_mes_actual = sum(float(item.get('total') or 0) for item in por_mes if int(item.get('mes') or 0) == mes_actual.month)
+
+            resultado = {
+                'periodo': {
+                    'fecha_inicio': fecha_inicio,
+                    'fecha_fin': fecha_fin,
+                    'anio': date.fromisoformat(fecha_fin).year
+                },
+                'resumen': {
+                    'ingresos_brutos': ingreso_bruto,
+                    'ventas_contado': venta_contado,
+                    'ventas_credito': venta_credito,
+                    'anticipos': anticipos,
+                    'abonos_cobrados': abonos_cobrados,
+                    'saldo_pendiente': saldo_pendiente,
+                    'cobros_reales': venta_contado + anticipos + abonos_cobrados,
+                    'costo_ventas': costo_ventas_total,
+                    'gastos_totales': gastos_totales,
+                    'egresos_caja': egresos_caja,
+                    'total_gastado': gastos_totales,
+                    'total_proveedores': int(compras_summary.get('total_proveedores') or 0),
+                    'total_compras': int(compras_summary.get('total_compras') or 0),
+                    'margen_estimado': float(compras_summary.get('margen_estimado') or 0),
+                    'base_gasto': float(compras_summary.get('base_gasto') or 0),
+                    'utilidad_bruta': utilidad_bruta,
+                    'utilidad_neta': utilidad_neta,
+                    'total_mes_actual': total_mes_actual,
+                    'total_iva_soportado': total_iva_soportado,
+                    'ingresos_caja': ingresos_caja,
+                    'flujo_caja': ingresos_caja - empresa_egresos,
+                    'empresa_egresos': empresa_egresos,
+                    'ingresos_netos': ingreso_bruto - gastos_totales
+                },
+                'por_mes': [
+                    {'mes': int(item.get('mes') or 0), 'total': float(item.get('total') or 0)}
+                    for item in por_mes
+                ],
+                'top_proveedores': [
+                    {
+                        'proveedor_telefono': item.get('proveedor_telefono'),
+                        'nombre': item.get('nombre_empresa') or item.get('nombre_proveedor') or 'Proveedor',
+                        'total': float(item.get('total_compra') or 0)
+                    }
+                    for item in top_proveedores
+                ]
+            }
+
+            return serializar_datos(resultado)
+        except Exception as e:
+            logger.error(f"Error en obtener_declaracion_renta_resumen: {str(e)}")
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    @staticmethod
+    def obtener_declaracion_renta_proveedores(fecha_inicio=None, fecha_fin=None):
+        """Lista consolidada por proveedor para la pantalla de declaración de renta."""
+        try:
+            if not fecha_fin:
+                fecha_fin = date.today().isoformat()
+            if not fecha_inicio:
+                fecha_inicio = date.today().replace(day=1).isoformat()
+
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            sql = """
+                SELECT
+                    cp.proveedor_telefono AS telefono,
+                    p.nombre_empresa,
+                    p.nombre_proveedor,
+                    p.estado,
+                    COALESCE(SUM(cp.total_compra), 0) AS total_compras,
+                    COALESCE(SUM(cp.cantidad), 0) AS cantidad_total,
+                    COALESCE(COUNT(cp.id), 0) AS total_registros,
+                    COALESCE(MAX(cp.fecha_compra), NULL) AS ultima_compra
+                FROM compras_proveedor cp
+                LEFT JOIN proveedor p ON p.telefono = cp.proveedor_telefono
+                WHERE cp.fecha_compra BETWEEN %s AND %s
+                GROUP BY cp.proveedor_telefono, p.nombre_empresa, p.nombre_proveedor, p.estado
+                ORDER BY total_compras DESC
+            """
+            cursor.execute(sql, (fecha_inicio, fecha_fin))
+            rows = cursor.fetchall() or []
+
+            proveedores = []
+            for row in rows:
+                proveedores.append({
+                    'telefono': row.get('telefono'),
+                    'nombre_empresa': row.get('nombre_empresa') or 'Sin empresa',
+                    'nombre_proveedor': row.get('nombre_proveedor') or 'Sin nombre',
+                    'estado': row.get('estado') or 'activo',
+                    'total_compras': float(row.get('total_compras') or 0),
+                    'cantidad_total': float(row.get('cantidad_total') or 0),
+                    'total_registros': int(row.get('total_registros') or 0),
+                    'ultima_compra': row.get('ultima_compra')
+                })
+
+            return serializar_datos(proveedores)
+        except Exception as e:
+            logger.error(f"Error en obtener_declaracion_renta_proveedores: {str(e)}")
+            return []
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if 'conn' in locals() and conn:
+                conn.close()
+
+    @staticmethod
+    def obtener_declaracion_renta_detalle_proveedor(telefono, fecha_inicio=None, fecha_fin=None):
+        """Devuelve el detalle de compras de un proveedor para respaldo fiscal y revisión."""
+        try:
+            if not fecha_fin:
+                fecha_fin = date.today().isoformat()
+            if not fecha_inicio:
+                fecha_inicio = date.today().replace(day=1).isoformat()
+
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            proveedor = None
+            cursor.execute(
+                "SELECT telefono, nombre_empresa, nombre_proveedor, estado FROM proveedor WHERE telefono = %s",
+                (telefono,)
+            )
+            proveedor_row = cursor.fetchone()
+            if proveedor_row:
+                proveedor = {
+                    'telefono': proveedor_row.get('telefono'),
+                    'nombre_empresa': proveedor_row.get('nombre_empresa') or 'Sin empresa',
+                    'nombre_proveedor': proveedor_row.get('nombre_proveedor') or 'Sin nombre',
+                    'estado': proveedor_row.get('estado') or 'activo'
+                }
+
+            cursor.execute(
+                """
+                SELECT
+                    cp.id,
+                    cp.fecha_compra,
+                    p.nombre AS producto,
+                    cp.cantidad,
+                    cp.precio_costo_unitario,
+                    cp.precio_venta_unitario,
+                    cp.total_compra,
+                    cp.observaciones
+                FROM compras_proveedor cp
+                LEFT JOIN productos p ON p.id = cp.producto_id
+                WHERE cp.proveedor_telefono = %s
+                  AND cp.fecha_compra BETWEEN %s AND %s
+                ORDER BY cp.fecha_compra DESC, cp.id DESC
+                """,
+                (telefono, fecha_inicio, fecha_fin)
+            )
+            compras = cursor.fetchall() or []
+
+            resumen = {
+                'total_compras': sum(float(item.get('total_compra') or 0) for item in compras),
+                'cantidad_total': sum(float(item.get('cantidad') or 0) for item in compras),
+                'registros': len(compras),
+                'ultima_compra': max((item.get('fecha_compra') for item in compras if item.get('fecha_compra')), default=None),
+                'iva_soportado': round(sum(float(item.get('total_compra') or 0) for item in compras) * 0.19, 2)
+            }
+
+            return serializar_datos({
+                'proveedor': proveedor,
+                'resumen': resumen,
+                'compras': [{
+                    'id': item.get('id'),
+                    'fecha_compra': item.get('fecha_compra'),
+                    'producto': item.get('producto') or 'Producto sin nombre',
+                    'cantidad': float(item.get('cantidad') or 0),
+                    'precio_costo_unitario': float(item.get('precio_costo_unitario') or 0),
+                    'precio_venta_unitario': float(item.get('precio_venta_unitario') or 0),
+                    'total_compra': float(item.get('total_compra') or 0),
+                    'observaciones': item.get('observaciones') or ''
+                } for item in compras]
+            })
+        except Exception as e:
+            logger.error(f"Error en obtener_declaracion_renta_detalle_proveedor: {str(e)}")
+            return {'proveedor': None, 'resumen': {'total_compras': 0, 'cantidad_total': 0, 'registros': 0, 'ultima_compra': None, 'iva_soportado': 0}, 'compras': []}
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if 'conn' in locals() and conn:
                 conn.close()
     
     # ===== MÉTODOS PARA PRODUCTOS DE PROVEEDORES =====
