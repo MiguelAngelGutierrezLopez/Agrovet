@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('vista', 'vista'), ('controlador', 'controlador'), ('modelo', 'modelo'), ('data', 'data'), ('AgroVet.sql', '.'), ('README_INSTALACION.txt', '.'), ('config.py', '.'), ('database.py', '.'), ('requirements.txt', '.')],
+    datas=[('vista', 'vista'), ('data', 'data'), ('imagenes', 'imagenes'), ('static', 'static'), ('templates', 'templates')],
     hiddenimports=['mysql.connector', 'flask', 'waitress', 'reportlab', 'arabic_reshaper', 'bidi', 'pyphen', 'xhtml2pdf', 'svglib', 'lxml'],
     hookspath=[],
     hooksconfig={},

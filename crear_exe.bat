@@ -65,6 +65,22 @@ set /p opcion="Opción (1, 2 o 3): "
 
 if "%opcion%"=="1" (
     echo 🔨 Compilando en carpeta...
+
+    REM Compilar en una carpeta temporal para evitar bloqueos de salidas anteriores
+    if exist "dist\_build" rmdir /s /q "dist\_build"
+    if exist "build\_build" rmdir /s /q "build\_build"
+    if exist "build\_build_setup" rmdir /s /q "build\_build_setup"
+    if exist "%TEMP%\AGROVET_1.0" rmdir /s /q "%TEMP%\AGROVET_1.0"
+    if exist "AGROVET.spec" del /q "AGROVET.spec"
+    if exist "setup_database.spec" del /q "setup_database.spec"
+    if exist "dist\AGROVET_1.0" rmdir /s /q "dist\AGROVET_1.0"
+    if exist "dist\AGROVET_1.0.zip" del /q "dist\AGROVET_1.0.zip"
+    if exist "dist\AGROVET_1.0" (
+        echo ❌ No se pudo limpiar dist\AGROVET_1.0
+        echo    Cierra cualquier ventana o proceso que use esa carpeta e intenta de nuevo.
+        pause
+        exit /b 1
+    )
     
     REM Crear carpeta para datos si no existe
     if not exist "data" mkdir data
@@ -79,9 +95,9 @@ if "%opcion%"=="1" (
         echo 2. Puerto 3306 disponible
         echo 3. Usuario: root (puede cambiar después)
         echo.
-        echo ## Instalación de Base de Datos
-        echo Ejecutar: setup_database.exe
-        echo O usar HeidiSQL para importar AgroVet.sql
+        echo ## Base de Datos
+        echo La base de datos debe estar creada previamente en MySQL o MariaDB.
+        echo HeidiSQL no necesita permanecer abierto.
         echo.
         echo ## Ejecutar la Aplicación
         echo 1. Ejecutar AGROVET.exe
@@ -89,22 +105,18 @@ if "%opcion%"=="1" (
         echo 3. URL: http://localhost:5000
         echo.
         echo ## Solución de Problemas
-        echo - Verificar que MySQL esté ejecutándose
-        echo - Revisar config.py para credenciales
+        echo - Verificar que el servicio MySQL/MariaDB esté ejecutándose
+        echo - Verificar las credenciales configuradas para la base de datos
         echo - Ejecutar como administrador si hay errores
     ) > "README_INSTALACION.txt"
     
     "%PYPATH%" -m PyInstaller --name "AGROVET" ^
                 --onedir ^
                 --add-data "vista;vista" ^
-                --add-data "controlador;controlador" ^
-                --add-data "modelo;modelo" ^
                 --add-data "data;data" ^
-                --add-data "AgroVet.sql;." ^
-                --add-data "README_INSTALACION.txt;." ^
-                --add-data "config.py;." ^
-                --add-data "database.py;." ^
-                --add-data "requirements.txt;." ^
+                --add-data "imagenes;imagenes" ^
+                --add-data "static;static" ^
+                --add-data "templates;templates" ^
                 --hidden-import mysql.connector ^
                 --hidden-import flask ^
                 --hidden-import waitress ^
@@ -117,7 +129,16 @@ if "%opcion%"=="1" (
                 --hidden-import lxml ^
                 --console ^
                 --clean ^
+                --noconfirm ^
+                --distpath "dist\_build" ^
+                --workpath "build\_build" ^
                 main.py
+
+    if errorlevel 1 (
+        echo ❌ Error compilando AGROVET
+        pause
+        exit /b 1
+    )
     
     REM También compilar el configurador de base de datos
     echo 🔧 Compilando configurador de base de datos...
@@ -127,12 +148,55 @@ if "%opcion%"=="1" (
                 --hidden-import mysql.connector ^
                 --console ^
                 --clean ^
+                --noconfirm ^
+                --distpath "dist\_build" ^
+                --workpath "build\_build_setup" ^
                 setup_database.py
+
+    if errorlevel 1 (
+        echo ❌ Error compilando setup_database
+        pause
+        exit /b 1
+    )
+
+    if not exist "dist\_build\AGROVET\AGROVET.exe" (
+        echo ❌ No se genero AGROVET.exe
+        pause
+        exit /b 1
+    )
+    if not exist "dist\_build\setup_database.exe" (
+        echo ❌ No se genero setup_database.exe
+        pause
+        exit /b 1
+    )
+
+    REM Preparar una carpeta independiente para entregar al cliente
+    echo 📦 Preparando paquete de entrega...
+    mkdir "dist\AGROVET_1.0" > nul 2>&1
+    xcopy "dist\_build\AGROVET\*" "dist\AGROVET_1.0\" /E /I /H /Y > nul
+    copy /Y "README_INSTALACION.txt" "dist\AGROVET_1.0\README_INSTALACION.txt" > nul
+
+    REM Comprimir desde TEMP para evitar bloqueos de OneDrive o del antivirus en dist
+    xcopy "dist\AGROVET_1.0\*" "%TEMP%\AGROVET_1.0\" /E /I /H /Y > nul
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Compress-Archive -Path (Join-Path $env:TEMP 'AGROVET_1.0') -DestinationPath (Join-Path '%CD%' 'dist\AGROVET_1.0.zip') -CompressionLevel Optimal -Force"
+    if errorlevel 1 (
+        echo ❌ Error creando dist\AGROVET_1.0.zip
+        rmdir /s /q "%TEMP%\AGROVET_1.0"
+        pause
+        exit /b 1
+    )
+
+    REM Eliminar las carpetas temporales para evitar entregar duplicados
+    rmdir /s /q "%TEMP%\AGROVET_1.0"
+    rmdir /s /q "dist\_build"
+    rmdir /s /q "build\_build"
+    rmdir /s /q "build\_build_setup"
     
     echo ✅ Compilación completada!
-    echo 📁 La aplicación está en: dist\AGROVET\
-    echo 📄 Ejecuta: dist\AGROVET\AGROVET.exe
-    echo 🔧 Configurador BD: dist\setup_database.exe
+    echo 📁 Carpeta de entrega: dist\AGROVET_1.0\
+    echo 📦 ZIP de entrega: dist\AGROVET_1.0.zip
+    echo 📄 Ejecuta: dist\AGROVET_1.0\AGROVET.exe
+    exit /b 0
 )
 
 if "%opcion%"=="2" (

@@ -7,9 +7,9 @@ Creando documentación de instalación...
 2. Puerto 3306 disponible
 3. Usuario: root (puede cambiar después
 
-## Instalación de Base de Datos
-Ejecutar: setup_database.exe
-O usar HeidiSQL para importar AgroVet.sql
+## Base de Datos
+La base de datos debe estar creada previamente en MySQL o MariaDB.
+HeidiSQL no necesita permanecer abierto.
 
 ## Ejecutar la Aplicación
 1. Ejecutar AGROVET.exe
@@ -17,6 +17,6 @@ O usar HeidiSQL para importar AgroVet.sql
 3. URL: http://localhost:5000
 
 ## Solución de Problemas
-- Verificar que MySQL esté ejecutándose
-- Revisar config.py para credenciales
+- Verificar que el servicio MySQL/MariaDB esté ejecutándose
+- Verificar las credenciales configuradas para la base de datos
 - Ejecutar como administrador si hay errores
