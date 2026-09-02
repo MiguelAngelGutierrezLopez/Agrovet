@@ -1258,6 +1258,18 @@ def quitar_producto_proveedor(telefono, producto_id):
         logger.error(f"Error al quitar producto {producto_id} del proveedor {telefono}: {str(e)}")
         return jsonify({'success': False, 'message': f'Error al quitar producto: {str(e)}'}), 500
 
+@cliente_proveedor_bp.route('/proveedor/<telefono>/compra/<int:compra_id>', methods=['DELETE'])
+def eliminar_compra_proveedor(telefono, compra_id):
+    """Eliminar una compra individual registrada por un proveedor."""
+    try:
+        success, message = ClienteProveedorModel.eliminar_compra_proveedor(compra_id, telefono)
+        if success:
+            return jsonify({'success': True, 'message': message})
+        return jsonify({'success': False, 'message': message}), 400
+    except Exception as e:
+        logger.error(f"Error al eliminar compra {compra_id} del proveedor {telefono}: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error al eliminar compra: {str(e)}'}), 500
+
 @cliente_proveedor_bp.route('/productos/catalogo', methods=['GET'])
 def obtener_catalogo_productos():
     """Obtener catálogo de productos para elegir los que distribuye un proveedor."""

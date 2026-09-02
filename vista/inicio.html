@@ -921,49 +921,50 @@
         /* 992px - 1200px: Sidebar compacto (70px) */
         @media (max-width: 1200px) {
             .sidebar {
-                width: 70px;
+                width: 250px;
                 padding: 20px 0;
             }
             
             .sidebar-header {
-                flex-direction: column;
-                padding: 0 10px 20px;
-                min-height: 80px;
+                flex-direction: row;
+                padding: 20px 15px;
+                min-height: auto;
             }
             
             .logo span, .slogan, .nav-text {
-                display: none;
+                display: block;
             }
             
             .logo-container {
-                width: 50px;
+                width: auto;
             }
             
             .nav-item {
-                justify-content: center;
-                padding: 15px;
-                width: 50px;
-                margin: 0 auto 8px;
+                justify-content: flex-start;
+                padding: 12px 15px;
+                width: auto;
+                margin: 0 15px 8px;
             }
             
             .nav-icon {
-                font-size: 20px;
+                font-size: 16px;
                 margin: 0;
             }
             
             .main-content {
-                margin-left: 70px;
+                margin-left: 250px;
                 padding: 20px;
-                width: calc(100% - 70px);
+                width: calc(100% - 250px);
             }
             
             .sidebar.collapsed {
-                transform: translateX(-70px);
+                transform: translateX(-100%);
                 width: 0;
             }
             
             .toggle-sidebar-btn.collapsed {
-                left: 10px;
+                left: auto;
+                right: -15px;
             }
         }
         
@@ -1189,7 +1190,7 @@
             </a>
             <a href="/declaracion_renta" class="nav-item">
                 <i class="nav-icon fas fa-file-invoice-dollar"></i>
-                <span class="nav-text">Declaración de Renta</span>
+                <span class="nav-text">Reporte financiero</span>
             </a>
         </nav>
     </div>

@@ -34,12 +34,11 @@
         body {
             background-color: var(--blanco-hueso);
             color: var(--gris-oscuro);
-            display: flex;
             min-height: 100vh;
             overflow-x: hidden;
         }
         
-        /* ===== SIDEBAR ===== */
+        /* ===== SIDEBAR IZQUIERDO ===== */
         .sidebar {
             width: 250px;
             background: var(--teal);
@@ -47,16 +46,28 @@
             padding: 20px 0;
             position: fixed;
             height: 100vh;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
             z-index: 1000;
+            transition: all 0.3s ease;
+            left: 0;
         }
-        .sidebar.collapsed { display: none; }
-        
+
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
         .logo-container {
             text-align: center;
             padding: 20px 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
         }
+
         .logo {
             display: flex;
             align-items: center;
@@ -65,11 +76,30 @@
             font-size: 22px;
             font-weight: 700;
         }
-        .logo-agro { color: white; }
-        .logo-vet { color: var(--mostaza); }
-        .slogan { font-size: 11px; opacity: 0.8; margin-top: 5px; }
-        
-        .nav-menu { padding: 0 15px; }
+
+        .logo-agro {
+            color: white;
+        }
+
+        .logo-vet {
+            color: var(--mostaza);
+        }
+
+        .slogan {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 5px;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .slogan {
+            opacity: 0;
+        }
+
+        .nav-menu {
+            padding: 0 15px;
+        }
+
         .nav-item {
             display: flex;
             align-items: center;
@@ -79,16 +109,40 @@
             text-decoration: none;
             border-radius: 6px;
             margin-bottom: 6px;
+            transition: all 0.2s;
             background: rgba(255,255,255,0.05);
+            overflow: hidden;
+            white-space: nowrap;
         }
-        .nav-item:hover { background: rgba(255,255,255,0.1); }
-        .nav-item.active {
+
+        .nav-item:hover {
             background: rgba(255,255,255,0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.2);
             border-left: 3px solid var(--mostaza);
         }
-        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
-        .nav-text { font-size: 14px; font-weight: 500; }
-        
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        /* BOTÓN PARA OCULTAR/MOSTRAR SIDEBAR */
         .toggle-sidebar-btn {
             position: absolute;
             top: 50%;
@@ -103,8 +157,24 @@
             justify-content: center;
             cursor: pointer;
             border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
             z-index: 1001;
         }
+
+        .toggle-sidebar-btn:hover {
+            background: var(--terracota);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .toggle-sidebar-btn.collapsed {
+            right: -40px;
+            background: var(--teal);
+            color: white;
+        }
+
+        /* BOTÓN FLOTANTE CUANDO EL SIDEBAR ESTÁ OCULTO */
         .toggle-sidebar-collapsed {
             position: fixed;
             top: 20px;
@@ -119,17 +189,28 @@
             justify-content: center;
             cursor: pointer;
             border: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
             z-index: 999;
+            transition: all 0.3s ease;
         }
-        
+
+        .toggle-sidebar-collapsed:hover {
+            background: var(--mostaza);
+            color: var(--gris-oscuro);
+            transform: scale(1.1);
+        }
+
         /* ===== CONTENIDO PRINCIPAL ===== */
         .main-content {
             flex: 1;
             margin-left: 250px;
             padding: 30px;
             min-height: 100vh;
+            transition: margin-left 0.3s ease;
         }
-        .main-content.expanded { margin-left: 0; }
+        .main-content.expanded {
+            margin-left: 0;
+        }
         
         /* ===== HEADER ===== */
         .top-header {
@@ -799,10 +880,12 @@
             .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
         }
         @media (max-width: 992px) {
-            .sidebar { width: 60px; }
-            .logo span, .slogan, .nav-text { display: none; }
-            .nav-item { justify-content: center; padding: 12px; }
-            .main-content { margin-left: 60px; padding: 20px; }
+            .sidebar { width: 250px; }
+            .sidebar.collapsed { width: 0; }
+            .logo span, .slogan, .nav-text { display: block; }
+            .nav-item { justify-content: flex-start; padding: 12px 15px; }
+            .main-content { margin-left: 250px; padding: 20px; }
+            .main-content.expanded { margin-left: 0; }
             .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
@@ -842,7 +925,7 @@
             <a href="/historial_venta" class="nav-item active"><i class="nav-icon fas fa-history"></i><span class="nav-text">Historial</span></a>
             <a href="/inventario" class="nav-item"><i class="nav-icon fas fa-warehouse"></i><span class="nav-text">Inventario</span></a>
             <a href="/reporte_caja" class="nav-item"><i class="nav-icon fas fa-chart-bar"></i><span class="nav-text">Reportes</span></a>
-            <a href="/declaracion_renta" class="nav-item"><i class="nav-icon fas fa-file-invoice-dollar"></i><span class="nav-text">Declaración de Renta</span></a>
+            <a href="/declaracion_renta" class="nav-item"><i class="nav-icon fas fa-file-invoice-dollar"></i><span class="nav-text">Reporte financiero</span></a>
         </nav>
     </div>
     

@@ -24,32 +24,188 @@
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        body { background-color: var(--blanco-hueso); color: var(--gris-oscuro); display: flex; min-height: 100vh; overflow-x: hidden; }
+        body {
+            background-color: var(--blanco-hueso);
+            color: var(--gris-oscuro);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
         
-        .sidebar { width: 250px; background: var(--teal); color: white; position: fixed; height: 100vh; transition: 0.3s ease; z-index: 1000; left: 0; }
-        .sidebar.collapsed { width: 0; transform: translateX(-100%); opacity: 0; pointer-events: none; }
-        .logo-container { text-align: center; padding: 20px 15px; border-bottom: 2px solid rgba(255,255,255,0.1); margin-bottom: 20px; overflow: hidden; white-space: nowrap; }
-        .logo { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 22px; font-weight: 700; }
-        .logo-agro { color: white; }
-        .logo-vet { color: var(--mostaza); }
-        .slogan { font-size: 11px; opacity: 0.8; margin-top: 5px; }
-        .nav-menu { padding: 0 15px; }
-        .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: white; text-decoration: none; border-radius: 6px; margin-bottom: 6px; background: rgba(255,255,255,0.05); overflow: hidden; white-space: nowrap; }
-        .nav-item:hover { background: rgba(255,255,255,0.15); }
-        .nav-item.active { background: rgba(255,255,255,0.2); border-left: 3px solid var(--mostaza); }
-        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
-        .nav-text { font-size: 14px; font-weight: 500; }
-        
-        .toggle-sidebar-btn { position: absolute; top: 50%; right: -15px; background: var(--mostaza); color: var(--gris-oscuro); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 1001; }
-        .toggle-sidebar-btn:hover { background: var(--terracota); color: white; }
-        .toggle-sidebar-btn.collapsed { right: -40px; background: var(--teal); color: white; transform: rotate(180deg); }
-        
-        .toggle-sidebar-collapsed { position: fixed; top: 20px; left: 20px; width: 40px; height: 40px; background: var(--teal); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; border: none; box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 999; }
-        .toggle-sidebar-collapsed.show { display: flex; }
-        .toggle-sidebar-collapsed:hover { background: var(--mostaza); color: var(--gris-oscuro); }
-        
-        .main-content { flex: 1; margin-left: 250px; padding: 30px; min-height: 100vh; transition: margin-left 0.3s ease; }
-        .main-content.expanded { margin-left: 0; width: 100%; }
+        .sidebar {
+            width: 250px;
+            background: var(--teal);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            left: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .logo-container {
+            text-align: center;
+            padding: 20px 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .logo-agro {
+            color: white;
+        }
+
+        .logo-vet {
+            color: var(--mostaza);
+        }
+
+        .slogan {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 5px;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .slogan {
+            opacity: 0;
+        }
+
+        .nav-menu {
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.05);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.2);
+            border-left: 3px solid var(--mostaza);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 50%;
+            right: -15px;
+            background: var(--mostaza);
+            color: var(--gris-oscuro);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .toggle-sidebar-btn:hover {
+            background: var(--terracota);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .toggle-sidebar-btn.collapsed {
+            right: -40px;
+            background: var(--teal);
+            color: white;
+        }
+
+        .toggle-sidebar-collapsed {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--teal);
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-sidebar-collapsed.show {
+            display: flex;
+        }
+
+        .toggle-sidebar-collapsed:hover {
+            background: var(--mostaza);
+            color: var(--gris-oscuro);
+            transform: scale(1.1);
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+            width: 100%;
+        }
         
         .top-header { background: white; border-radius: 12px; padding: 20px 30px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--terracota); }
         .header-left h1 { color: var(--teal); font-size: 28px; margin-bottom: 5px; }
@@ -236,7 +392,7 @@
             <a href="/historial_venta" class="nav-item"><i class="nav-icon fas fa-history"></i><span class="nav-text">Historial</span></a>
             <a href="/inventario" class="nav-item"><i class="nav-icon fas fa-warehouse"></i><span class="nav-text">Inventario</span></a>
             <a href="/reporte_caja" class="nav-item"><i class="nav-icon fas fa-chart-bar"></i><span class="nav-text">Reportes</span></a>
-            <a href="/declaracion_renta" class="nav-item"><i class="nav-icon fas fa-file-invoice-dollar"></i><span class="nav-text">Declaración de Renta</span></a>
+            <a href="/declaracion_renta" class="nav-item"><i class="nav-icon fas fa-file-invoice-dollar"></i><span class="nav-text">Reporte financiero</span></a>
         </nav>
     </div>
     
@@ -297,6 +453,11 @@
         function getDeudaClass(d) { d = parseFloat(d) || 0; if (d === 0) return 'deuda-cero'; if (d < 50000) return 'deuda-pequena'; return 'deuda-grande'; }
         function getEstadoClass(e) { switch(e) { case 'activo': return 'status-activo'; case 'inactivo': return 'status-inactivo'; case 'moroso': return 'status-moroso'; default: return 'status-inactivo'; } }
         function getEstadoCreditoClass(e) { switch(e) { case 'pendiente': return 'estado-pendiente'; case 'pagado': return 'estado-pagado'; default: return 'estado-pendiente'; } }
+        
+        function toLocalDateInput(date = new Date()) {
+            const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            return local.toISOString().slice(0, 10);
+        }
         
         function showNotification(msg, type='info') { const n = document.createElement('div'); n.className = `notification notification-${type}`; n.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':type==='error'?'fa-exclamation-circle':'fa-info-circle'}"></i>${msg}`; document.body.appendChild(n); setTimeout(() => n.remove(), 3000); }
         
@@ -598,13 +759,29 @@
             }
         }
         
-        async function verHistorialProveedor(telefono, fechaInicio = null, fechaFin = null) { try { prepararCamposCompraProveedor(); const inicioInput = document.getElementById('historialProveedorFechaInicio'); const finInput = document.getElementById('historialProveedorFechaFin'); const fechaInicioValor = fechaInicio || (inicioInput ? inicioInput.value : new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]); const fechaFinValor = fechaFin || (finInput ? finInput.value : new Date().toISOString().split('T')[0]); if (inicioInput) inicioInput.value = fechaInicioValor; if (finInput) finInput.value = fechaFinValor; const params = new URLSearchParams({ fecha_inicio: fechaInicioValor, fecha_fin: fechaFinValor }); const r = await apiRequest(`/proveedor/${telefono}/historial?${params.toString()}`); if (r.success) { const h = r.historial; document.getElementById('historialProveedorNombre').textContent = `Historial - ${h.proveedor.nombre_empresa}`; document.getElementById('resumenProveedorGrid').innerHTML = `<div class="resumen-item"><div class="resumen-valor">${h.resumen.total_productos||0}</div><div class="resumen-label">Productos</div></div><div class="resumen-item"><div class="resumen-valor" style="color:${h.resumen.estado==='activo'?'var(--exito)':'var(--error)'}">${h.resumen.estado==='activo'?'Activo':'Inactivo'}</div><div class="resumen-label">Estado</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_periodo || 0)}</div><div class="resumen-label">Gastado período</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_mes || 0)}</div><div class="resumen-label">Gastado mes</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_anio || 0)}</div><div class="resumen-label">Gastado año</div></div>`; const prodList = document.getElementById('productosProveedorList'); const productosAsignados = h.productos || []; const selectCompra = document.getElementById('compraProveedorProducto'); const currentTelefono = document.getElementById('compraProveedorTelefono'); currentTelefono.value = telefono; if (!productosAsignados.length) { selectCompra.innerHTML = '<option value="">Sin productos</option>'; } else { selectCompra.innerHTML = productosAsignados.map(p => `<option value="${p.id}">${p.nombre}</option>`).join(''); } const productoInicial = productosAsignados[0]; if (productoInicial) actualizarPrecioCompraProveedor(productoInicial.id); document.getElementById('compraProveedorFecha').value = fechaFinValor || new Date().toISOString().split('T')[0]; if (prodList) { prodList.innerHTML = productosAsignados.length ? `<div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.7fr;gap:8px;padding:10px 8px;border-bottom:1px solid #e9e2df;font-weight:700;color:#5f4338;font-size:12px;text-transform:uppercase;min-width:840px;"><div>Producto</div><div>Cant.</div><div>Cant/Mes</div><div>Cant/Año</div><div>Costo</div><div>Venta</div><div>Mes</div><div>Año</div><div>Acción</div></div>` + productosAsignados.map(p => `<div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.7fr;gap:8px;padding:12px 8px;border-bottom:1px solid #f0e5e1;align-items:center;min-width:840px;"><div><strong>${p.nombre}</strong><div style="font-size:12px;color:var(--gris-medio)">${p.categoria || 'Sin categoría'}</div></div><div>${Number(p.cantidad_total_periodo || 0).toFixed(2)}</div><div>${Number(p.cantidad_comprada_mes || 0).toFixed(2)}</div><div>${Number(p.cantidad_comprada_anio || 0).toFixed(2)}</div><div>${formatCurrency(p.precio_costo || 0)}</div><div>${formatCurrency(p.precio_venta || 0)}</div><div>${formatCurrency(p.costo_total_mes || 0)}</div><div>${formatCurrency(p.costo_total_anio || 0)}</div><div><button type="button" class="btn-icon-small btn-quitar-producto" data-producto-id="${p.id}" title="Quitar producto del proveedor" style="display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--error);cursor:pointer;padding:6px;border-radius:8px;min-width:32px;min-height:32px;"><i class="fas fa-trash"></i></button></div></div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--gris-medio)"><i class="fas fa-boxes" style="font-size:48px;margin-bottom:10px"></i><p>No hay productos</p></div>'; } document.getElementById('historialProveedorModal').style.display = 'flex'; } } catch(e) { showNotification('Error al cargar historial', 'error'); } }
+        async function verHistorialProveedor(telefono, fechaInicio = null, fechaFin = null) { try { prepararCamposCompraProveedor(); const inicioInput = document.getElementById('historialProveedorFechaInicio'); const finInput = document.getElementById('historialProveedorFechaFin'); const fechaInicioValor = fechaInicio || (inicioInput ? inicioInput.value : toLocalDateInput(new Date(new Date().getFullYear(), new Date().getMonth(), 1))); const fechaFinValor = fechaFin || (finInput ? finInput.value : toLocalDateInput(new Date())); if (inicioInput) inicioInput.value = fechaInicioValor; if (finInput) finInput.value = fechaFinValor; const params = new URLSearchParams({ fecha_inicio: fechaInicioValor, fecha_fin: fechaFinValor }); const r = await apiRequest(`/proveedor/${telefono}/historial?${params.toString()}`); if (r.success) { const h = r.historial; document.getElementById('historialProveedorNombre').textContent = `Historial - ${h.proveedor.nombre_empresa}`; document.getElementById('resumenProveedorGrid').innerHTML = `<div class="resumen-item"><div class="resumen-valor">${h.resumen.total_productos||0}</div><div class="resumen-label">Productos</div></div><div class="resumen-item"><div class="resumen-valor" style="color:${h.resumen.estado==='activo'?'var(--exito)':'var(--error)'}">${h.resumen.estado==='activo'?'Activo':'Inactivo'}</div><div class="resumen-label">Estado</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_periodo || 0)}</div><div class="resumen-label">Gastado período</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_mes || 0)}</div><div class="resumen-label">Gastado mes</div></div><div class="resumen-item"><div class="resumen-valor">${formatCurrency(h.resumen.total_gastado_anio || 0)}</div><div class="resumen-label">Gastado año</div></div>`; const prodList = document.getElementById('productosProveedorList'); const productosAsignados = h.productos || []; const selectCompra = document.getElementById('compraProveedorProducto'); const currentTelefono = document.getElementById('compraProveedorTelefono'); currentTelefono.value = telefono; if (!productosAsignados.length) { selectCompra.innerHTML = '<option value="">Sin productos</option>'; } else { selectCompra.innerHTML = productosAsignados.map(p => `<option value="${p.id}">${p.nombre}</option>`).join(''); } const productoInicial = productosAsignados[0]; if (productoInicial) actualizarPrecioCompraProveedor(productoInicial.id); document.getElementById('compraProveedorFecha').value = fechaFinValor || toLocalDateInput(new Date()); if (prodList) { prodList.innerHTML = productosAsignados.length ? `<div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.7fr;gap:8px;padding:10px 8px;border-bottom:1px solid #e9e2df;font-weight:700;color:#5f4338;font-size:12px;text-transform:uppercase;min-width:840px;"><div>Producto</div><div>Cant.</div><div>Cant/Mes</div><div>Cant/Año</div><div>Costo</div><div>Venta</div><div>Mes</div><div>Año</div><div>Acción</div></div>` + productosAsignados.map(p => `<div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 0.7fr;gap:8px;padding:12px 8px;border-bottom:1px solid #f0e5e1;align-items:center;min-width:840px;"><div><strong>${p.nombre}</strong><div style="font-size:12px;color:var(--gris-medio)">${p.categoria || 'Sin categoría'}</div></div><div>${Number(p.cantidad_total_periodo || 0).toFixed(2)}</div><div>${Number(p.cantidad_comprada_mes || 0).toFixed(2)}</div><div>${Number(p.cantidad_comprada_anio || 0).toFixed(2)}</div><div>${formatCurrency(p.precio_costo || 0)}</div><div>${formatCurrency(p.precio_venta || 0)}</div><div>${formatCurrency(p.costo_total_mes || 0)}</div><div>${formatCurrency(p.costo_total_anio || 0)}</div><div><button type="button" class="btn-icon-small btn-quitar-producto" data-producto-id="${p.id}" title="Quitar producto del proveedor" style="display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--error);cursor:pointer;padding:6px;border-radius:8px;min-width:32px;min-height:32px;"><i class="fas fa-trash"></i></button></div></div>`).join('') : '<div style="text-align:center;padding:20px;color:var(--gris-medio)"><i class="fas fa-boxes" style="font-size:48px;margin-bottom:10px"></i><p>No hay productos</p></div>'; } document.getElementById('historialProveedorModal').style.display = 'flex'; } } catch(e) { showNotification('Error al cargar historial', 'error'); } }
         function actualizarPrecioCompraProveedor(productoId) { const producto = (todosProductos || []).find(p => Number(p.id) === Number(productoId)); const costoInput = document.getElementById('compraProveedorCosto'); const ventaInput = document.getElementById('compraProveedorVenta'); if (!producto || !costoInput || !ventaInput) return; costoInput.value = Number(producto.precio_costo || 0); ventaInput.value = Number(producto.precio_venta || 0); }
         async function quitarProductoDelProveedor(telefono, productoId) { try { const r = await apiRequest(`/proveedor/${telefono}/productos/${productoId}`, 'DELETE'); if (!r.success) throw new Error(r.message || 'No se pudo quitar el producto'); showNotification('Producto quitado del proveedor', 'success'); await verHistorialProveedor(telefono); await cargarTodosProveedores(); } catch(e) { showNotification(e.message || 'Error al quitar producto', 'error'); } }
         async function registrarCompraProveedorFormulario(e) { e.preventDefault(); const telefono = document.getElementById('compraProveedorTelefono').value; const producto_id = document.getElementById('compraProveedorProducto').value; const cantidad = document.getElementById('compraProveedorCantidad').value; const precio_costo = document.getElementById('compraProveedorCosto').value; const precio_venta = document.getElementById('compraProveedorVenta').value; const fecha_compra = document.getElementById('compraProveedorFecha').value; const observaciones = document.getElementById('compraProveedorObservaciones').value; if (!telefono || !producto_id || !cantidad || !fecha_compra) { showNotification('Completa producto, cantidad y fecha', 'error'); return; }
-            try { const result = await apiRequest(`/proveedor/${telefono}/compra`, 'POST', { producto_id: Number(producto_id), cantidad: Number(cantidad), precio_costo: Number(precio_costo || 0), precio_venta: precio_venta ? Number(precio_venta) : null, fecha_compra, observaciones }); if (!result.success) throw new Error(result.message || 'No se pudo guardar la compra'); showNotification('Compra registrada correctamente', 'success'); document.getElementById('formCompraProveedor').reset(); document.getElementById('compraProveedorFecha').value = new Date().toISOString().split('T')[0]; const product = (todosProductos || []).find(p => Number(p.id) === Number(producto_id)); if (product) { document.getElementById('compraProveedorCosto').value = Number(product.precio_costo || 0); document.getElementById('compraProveedorVenta').value = Number(product.precio_venta || 0); } await verHistorialProveedor(telefono); await cargarTodosProveedores(); } catch (e) { showNotification(e.message || 'No se pudo guardar la compra', 'error'); } }
+            const cantidadEntera = Number(cantidad); if (!Number.isInteger(cantidadEntera) || cantidadEntera <= 0) { showNotification('La cantidad debe ser un entero mayor que cero', 'error'); return; }
+            try { const result = await apiRequest(`/proveedor/${telefono}/compra`, 'POST', { producto_id: Number(producto_id), cantidad: cantidadEntera, precio_costo: Number(precio_costo || 0), precio_venta: precio_venta ? Number(precio_venta) : null, fecha_compra, observaciones }); if (!result.success) throw new Error(result.message || 'No se pudo guardar la compra'); showNotification('Compra registrada correctamente', 'success'); document.getElementById('formCompraProveedor').reset(); document.getElementById('compraProveedorFecha').value = toLocalDateInput(new Date()); const product = (todosProductos || []).find(p => Number(p.id) === Number(producto_id)); if (product) { document.getElementById('compraProveedorCosto').value = Number(product.precio_costo || 0); document.getElementById('compraProveedorVenta').value = Number(product.precio_venta || 0); } await verHistorialProveedor(telefono); await cargarTodosProveedores(); } catch (e) { showNotification(e.message || 'No se pudo guardar la compra', 'error'); } }
+
+        async function eliminarCompraProveedor(telefono, compraId) {
+            if (!telefono || !compraId) return;
+            const confirmar = window.confirm('¿Deseas eliminar esta compra del proveedor?');
+            if (!confirmar) return;
+            try {
+                const result = await apiRequest(`/proveedor/${telefono}/compra/${compraId}`, 'DELETE');
+                if (!result.success) throw new Error(result.message || 'No se pudo eliminar la compra');
+                showNotification('Compra eliminada correctamente', 'success');
+                await verHistorialProveedor(telefono);
+                await cargarTodosProveedores();
+            } catch (e) {
+                showNotification(e.message || 'No se pudo eliminar la compra', 'error');
+            }
+        }
         
-        function abrirModalVentaManual(cedula, nombre) { document.getElementById('ventaManualClienteCedula').value = cedula; document.getElementById('ventaManualClienteNombre').value = nombre; document.getElementById('modalVentaManualTitulo').textContent = `Venta Manual - ${nombre}`; document.getElementById('ventaManualFecha').value = new Date().toISOString().split('T')[0]; document.getElementById('ventaManualTotal').value = ''; document.getElementById('ventaManualAnticipo').value = '0'; document.getElementById('ventaManualDiasCredito').value = '30'; document.getElementById('ventaManualObservaciones').value = ''; document.getElementById('productosVentaManualContainer').innerHTML = `<div class="producto-item"><div style="display:flex;gap:10px;align-items:center"><div class="producto-input-container"><input type="text" class="producto-input" placeholder="Nombre del producto (opcional)" oninput="buscarProductosSugeridos(this)"><div class="sugerencias-productos"></div></div><input type="number" class="cantidad-input" placeholder="Cantidad" min="1" value="1"><button type="button" class="btn-eliminar-producto" onclick="eliminarProductoVentaManual(this)"><i class="fas fa-times"></i></button></div></div>`; cargarTodosProductos(); document.getElementById('modalVentaManual').style.display = 'flex'; }
+        function abrirModalVentaManual(cedula, nombre) { document.getElementById('ventaManualClienteCedula').value = cedula; document.getElementById('ventaManualClienteNombre').value = nombre; document.getElementById('modalVentaManualTitulo').textContent = `Venta Manual - ${nombre}`; document.getElementById('ventaManualFecha').value = toLocalDateInput(new Date()); document.getElementById('ventaManualTotal').value = ''; document.getElementById('ventaManualAnticipo').value = '0'; document.getElementById('ventaManualDiasCredito').value = '30'; document.getElementById('ventaManualObservaciones').value = ''; document.getElementById('productosVentaManualContainer').innerHTML = `<div class="producto-item"><div style="display:flex;gap:10px;align-items:center"><div class="producto-input-container"><input type="text" class="producto-input" placeholder="Nombre del producto (opcional)" oninput="buscarProductosSugeridos(this)"><div class="sugerencias-productos"></div></div><input type="number" class="cantidad-input" placeholder="Cantidad" min="1" value="1"><button type="button" class="btn-eliminar-producto" onclick="eliminarProductoVentaManual(this)"><i class="fas fa-times"></i></button></div></div>`; cargarTodosProductos(); document.getElementById('modalVentaManual').style.display = 'flex'; }
         function cerrarModalVentaManual() { document.getElementById('modalVentaManual').style.display = 'none'; }
         function agregarProductoVentaManual() { const container = document.getElementById('productosVentaManualContainer'); const nuevo = document.createElement('div'); nuevo.className = 'producto-item'; nuevo.innerHTML = `<div style="display:flex;gap:10px;align-items:center"><div class="producto-input-container"><input type="text" class="producto-input" placeholder="Nombre del producto (opcional)" oninput="buscarProductosSugeridos(this)"><div class="sugerencias-productos"></div></div><input type="number" class="cantidad-input" placeholder="Cantidad" min="1" value="1"><button type="button" class="btn-eliminar-producto" onclick="eliminarProductoVentaManual(this)"><i class="fas fa-times"></i></button></div>`; container.appendChild(nuevo); }
         function eliminarProductoVentaManual(btn) { const items = document.querySelectorAll('.producto-item'); if (items.length > 1) btn.closest('.producto-item').remove(); }

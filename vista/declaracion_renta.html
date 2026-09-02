@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Declaración de Renta - AgroVet</title>
+    <title>Reporte financiero - AgroVet</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js">
@@ -375,6 +375,24 @@
             font-size: 12px;
         }
 
+        /* ===== BOTÓN DE AYUDA ===== */
+        .help-btn {
+            background: none;
+            border: none;
+            color: var(--teal);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0 4px;
+            transition: all 0.2s;
+            opacity: 0.6;
+        }
+
+        .help-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            color: var(--mostaza);
+        }
+
         /* ===== RESUMEN EJECUTIVO ===== */
         .executive-summary {
             display: grid;
@@ -391,6 +409,7 @@
             border: 1px solid #eaf0f1;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .executive-card:hover {
@@ -420,6 +439,13 @@
             font-size: 11px;
             color: var(--gris-medio);
             margin-top: 4px;
+        }
+
+        .executive-card .help-btn {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 13px;
         }
 
         .executive-card.income .value {
@@ -486,7 +512,7 @@
             padding: 14px 16px;
             transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .stat-card:hover {
@@ -500,6 +526,13 @@
             letter-spacing: 0.5px;
             color: var(--gris-medio);
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card .stat-label .help-btn {
+            font-size: 12px;
         }
 
         .stat-card .stat-value {
@@ -562,6 +595,7 @@
             border-radius: 10px;
             padding: 14px 16px;
             transition: transform 0.2s;
+            position: relative;
         }
 
         .analysis-card:hover {
@@ -573,6 +607,13 @@
             text-transform: uppercase;
             letter-spacing: 0.7px;
             color: var(--gris-medio);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .analysis-card .label .help-btn {
+            font-size: 12px;
         }
 
         .analysis-card .value {
@@ -596,6 +637,113 @@
         }
         .delta.neutral {
             color: var(--gris-medio);
+        }
+
+        /* ===== POPOVER / MODAL DE AYUDA ===== */
+        .help-popover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: white;
+            border-radius: 16px;
+            padding: 28px 32px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            z-index: 5000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-top: 5px solid var(--teal);
+        }
+
+        .help-popover.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .help-popover .popover-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .help-popover .popover-header h4 {
+            font-size: 17px;
+            color: var(--teal);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .help-popover .popover-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--gris-medio);
+            cursor: pointer;
+            padding: 0 4px;
+            transition: color 0.2s;
+        }
+
+        .help-popover .popover-close:hover {
+            color: var(--error);
+        }
+
+        .help-popover .popover-body {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--gris-oscuro);
+        }
+
+        .help-popover .popover-body .popover-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .help-popover .popover-body strong {
+            color: var(--teal);
+        }
+
+        .help-popover .popover-body .formula {
+            background: var(--celeste-fondo);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 8px 0;
+            display: inline-block;
+            color: var(--teal);
+        }
+
+        .help-popover .popover-body .badge-example {
+            display: inline-block;
+            background: var(--mostaza);
+            color: var(--gris-oscuro);
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .help-popover-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 4999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(3px);
+        }
+
+        .help-popover-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* ===== GRÁFICOS ===== */
@@ -782,7 +930,7 @@
             color: var(--error);
         }
 
-        /* ===== MODAL ===== */
+        /* ===== MODAL DE DETALLE ===== */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -1010,21 +1158,24 @@
         }
 
         @media (max-width: 992px) {
-            .sidebar:not(.collapsed) {
-                width: 70px;
+            .sidebar {
+                width: 250px;
             }
-            .sidebar:not(.collapsed) .nav-text,
-            .sidebar:not(.collapsed) .slogan {
-                display: none;
+            .sidebar.collapsed {
+                width: 0;
+            }
+            .sidebar .nav-text,
+            .sidebar .slogan {
+                display: block;
             }
             .main-content {
-                margin-left: 70px;
+                margin-left: 250px;
             }
             .main-content.expanded {
                 margin-left: 0;
             }
             .toggle-sidebar-btn {
-                right: -10px;
+                right: -15px;
             }
             .secondary-grid {
                 grid-template-columns: 1fr;
@@ -1067,6 +1218,10 @@
             .analysis-grid {
                 grid-template-columns: 1fr 1fr;
             }
+            .help-popover {
+                padding: 20px;
+                max-width: 95%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1096,6 +1251,13 @@
             .table-toolbar {
                 flex-direction: column;
                 align-items: stretch;
+            }
+            .help-popover {
+                padding: 16px;
+                max-width: 98%;
+            }
+            .help-popover .popover-body {
+                font-size: 13px;
             }
         }
 
@@ -1148,6 +1310,20 @@
     </style>
 </head>
 <body>
+
+    <!-- OVERLAY PARA POPOVER -->
+    <div class="help-popover-overlay" id="helpOverlay" onclick="cerrarAyuda()"></div>
+
+    <!-- POPOVER DE AYUDA -->
+    <div class="help-popover" id="helpPopover">
+        <div class="popover-header">
+            <h4 id="popoverTitulo">💡 ¿Qué significa esto?</h4>
+            <button class="popover-close" onclick="cerrarAyuda()">&times;</button>
+        </div>
+        <div class="popover-body" id="popoverCuerpo">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
 
     <!-- LOADING OVERLAY -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -1206,7 +1382,7 @@
             </a>
             <a href="/declaracion_renta" class="nav-item active">
                 <i class="nav-icon fas fa-file-invoice-dollar"></i>
-                <span class="nav-text">Declaración de Renta</span>
+                <span class="nav-text">Reporte financiero</span>
             </a>
         </nav>
     </div>
@@ -1215,8 +1391,8 @@
     <div class="main-content" id="mainContent">
         <header class="top-header">
             <div class="header-left">
-                <h1><i class="fas fa-file-invoice-dollar"></i> Declaración de Renta</h1>
-                <p>Resumen fiscal de compras a proveedores para revisión y preparación del período.</p>
+                <h1><i class="fas fa-file-invoice-dollar"></i> Reporte financiero</h1>
+                <p>Resumen de compras, costos y rendimiento del período.</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" id="btnLimpiarFiltros">
@@ -1290,24 +1466,36 @@
             <!-- ===== RESUMEN EJECUTIVO ===== -->
             <div class="executive-summary">
                 <div class="executive-card income">
+                    <button class="help-btn" onclick="mostrarAyuda('ingresos')" title="¿Qué significa esto?">
+                        <i class="fas fa-circle-question"></i>
+                    </button>
                     <div class="icon"><i class="fas fa-arrow-up"></i></div>
                     <div class="label">Ingresos brutos</div>
                     <div class="value" id="ingresoBruto">$ 0</div>
                     <div class="sub">Total ventas del período</div>
                 </div>
                 <div class="executive-card cost">
+                    <button class="help-btn" onclick="mostrarAyuda('costo_ventas')" title="¿Qué significa esto?">
+                        <i class="fas fa-circle-question"></i>
+                    </button>
                     <div class="icon"><i class="fas fa-shopping-cart"></i></div>
                     <div class="label">Costo de ventas</div>
                     <div class="value" id="costoVentas">$ 0</div>
                     <div class="sub">Precio costo de productos</div>
                 </div>
                 <div class="executive-card profit">
+                    <button class="help-btn" onclick="mostrarAyuda('utilidad_neta')" title="¿Qué significa esto?">
+                        <i class="fas fa-circle-question"></i>
+                    </button>
                     <div class="icon"><i class="fas fa-coins"></i></div>
                     <div class="label">Utilidad neta</div>
                     <div class="value" id="utilidadNeta">$ 0</div>
                     <div class="sub">Ingresos - Costos - Gastos</div>
                 </div>
                 <div class="executive-card cash">
+                    <button class="help-btn" onclick="mostrarAyuda('flujo_caja')" title="¿Qué significa esto?">
+                        <i class="fas fa-circle-question"></i>
+                    </button>
                     <div class="icon"><i class="fas fa-wallet"></i></div>
                     <div class="label">Flujo de caja</div>
                     <div class="value" id="flujoCaja">$ 0</div>
@@ -1323,25 +1511,45 @@
                 <div class="stats-grid-4">
                     <div class="stat-card">
                         <div class="color-bar green"></div>
-                        <div class="stat-label">Ventas contado</div>
+                        <div class="stat-label">
+                            Ventas contado
+                            <button class="help-btn" onclick="mostrarAyuda('ventas_contado')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="ventasContado">$ 0</div>
                         <div class="stat-foot">Ingresos inmediatos</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar orange"></div>
-                        <div class="stat-label">Ventas crédito</div>
+                        <div class="stat-label">
+                            Ventas crédito
+                            <button class="help-btn" onclick="mostrarAyuda('ventas_credito')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="ventasCredito">$ 0</div>
                         <div class="stat-foot">Cartera a cobrar</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar teal"></div>
-                        <div class="stat-label">Cobros reales</div>
+                        <div class="stat-label">
+                            Cobros reales
+                            <button class="help-btn" onclick="mostrarAyuda('cobros_reales')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="cobrosReales">$ 0</div>
                         <div class="stat-foot">Contado + abonos + anticipos</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar red"></div>
-                        <div class="stat-label">Saldo pendiente</div>
+                        <div class="stat-label">
+                            Saldo pendiente
+                            <button class="help-btn" onclick="mostrarAyuda('saldo_pendiente')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="saldoPendiente">$ 0</div>
                         <div class="stat-foot">Por cobrar en créditos</div>
                     </div>
@@ -1356,25 +1564,45 @@
                 <div class="stats-grid-4">
                     <div class="stat-card">
                         <div class="color-bar terracota"></div>
-                        <div class="stat-label">Gastos operativos</div>
+                        <div class="stat-label">
+                            Gastos operativos
+                            <button class="help-btn" onclick="mostrarAyuda('gastos_operativos')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="gastosOperativos">$ 0</div>
                         <div class="stat-foot">Compras a proveedores</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar mostaza"></div>
-                        <div class="stat-label">Egresos caja</div>
+                        <div class="stat-label">
+                            Egresos caja
+                            <button class="help-btn" onclick="mostrarAyuda('egresos_caja')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="egresosCaja">$ 0</div>
                         <div class="stat-foot">Salidas de efectivo</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar turquesa"></div>
-                        <div class="stat-label">IVA soportado</div>
-                        <div class="stat-value" id="ivaSoportado">$ 0</div>
-                        <div class="stat-foot">19% de gastos operativos</div>
+                        <div class="stat-label">
+                            Gastos del período
+                            <button class="help-btn" onclick="mostrarAyuda('gastos_periodo')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
+                        <div class="stat-value" id="gastosPeriodo">$ 0</div>
+                        <div class="stat-foot">Compras registradas</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar blue"></div>
-                        <div class="stat-label">Deducciones base</div>
+                        <div class="stat-label">
+                            Deducciones base
+                            <button class="help-btn" onclick="mostrarAyuda('base_gasto')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="baseGasto">$ 0</div>
                         <div class="stat-foot">Valor base de adquisición</div>
                     </div>
@@ -1389,25 +1617,45 @@
                 <div class="stats-grid-4">
                     <div class="stat-card">
                         <div class="color-bar green"></div>
-                        <div class="stat-label">Utilidad bruta</div>
+                        <div class="stat-label">
+                            Utilidad bruta
+                            <button class="help-btn" onclick="mostrarAyuda('utilidad_bruta')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="utilidadBruta">$ 0</div>
                         <div class="stat-foot">Ingresos - Costo ventas</div>
                     </div>
                     <div class="stat-card" style="background: rgba(39,174,96,0.05);">
                         <div class="color-bar green"></div>
-                        <div class="stat-label">Margen bruto</div>
+                        <div class="stat-label">
+                            Margen bruto
+                            <button class="help-btn" onclick="mostrarAyuda('margen_bruto')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="margenBruto">0%</div>
                         <div class="stat-foot">% de utilidad sobre ingresos</div>
                     </div>
                     <div class="stat-card" style="background: rgba(39,174,96,0.08);">
                         <div class="color-bar green"></div>
-                        <div class="stat-label">Margen neto</div>
+                        <div class="stat-label">
+                            Margen neto
+                            <button class="help-btn" onclick="mostrarAyuda('margen_neto')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="margenNeto">0%</div>
                         <div class="stat-foot">% de utilidad neta sobre ingresos</div>
                     </div>
                     <div class="stat-card">
                         <div class="color-bar mostaza"></div>
-                        <div class="stat-label">Margen estimado</div>
+                        <div class="stat-label">
+                            Margen estimado
+                            <button class="help-btn" onclick="mostrarAyuda('margen_estimado')" title="¿Qué significa esto?">
+                                <i class="fas fa-circle-question"></i>
+                            </button>
+                        </div>
                         <div class="stat-value" id="margenEstimado">$ 0</div>
                         <div class="stat-foot">Diferencia operativa</div>
                     </div>
@@ -1417,24 +1665,44 @@
             <!-- ===== ANÁLISIS COMPARATIVO ===== -->
             <div class="analysis-grid">
                 <div class="analysis-card">
-                    <div class="label">Período actual</div>
+                    <div class="label">
+                        Período actual
+                        <button class="help-btn" onclick="mostrarAyuda('periodo_actual')" title="¿Qué significa esto?">
+                            <i class="fas fa-circle-question"></i>
+                        </button>
+                    </div>
                     <div class="value" id="periodoActual">$ 0</div>
                     <div class="delta positive" id="deltaPeriodoActual">Sin variación</div>
                 </div>
                 <div class="analysis-card">
-                    <div class="label">Período anterior</div>
+                    <div class="label">
+                        Período anterior
+                        <button class="help-btn" onclick="mostrarAyuda('periodo_anterior')" title="¿Qué significa esto?">
+                            <i class="fas fa-circle-question"></i>
+                        </button>
+                    </div>
                     <div class="value" id="periodoAnterior">$ 0</div>
                     <div class="delta neutral" id="deltaPeriodoAnterior">Comparación automática</div>
                 </div>
                 <div class="analysis-card">
-                    <div class="label">Deducciones estimadas</div>
+                    <div class="label">
+                        Deducciones estimadas
+                        <button class="help-btn" onclick="mostrarAyuda('deducciones')" title="¿Qué significa esto?">
+                            <i class="fas fa-circle-question"></i>
+                        </button>
+                    </div>
                     <div class="value" id="deduccionesTotales">$ 0</div>
                     <div class="delta positive" id="deltaDeducciones">Base deducible</div>
                 </div>
                 <div class="analysis-card">
-                    <div class="label">Retenciones / IVA</div>
-                    <div class="value" id="retencionesIva">$ 0</div>
-                    <div class="delta neutral" id="deltaRetenciones">Revisión fiscal</div>
+                    <div class="label">
+                        Gastos del período
+                        <button class="help-btn" onclick="mostrarAyuda('gastos_comparativa')" title="¿Qué significa esto?">
+                            <i class="fas fa-circle-question"></i>
+                        </button>
+                    </div>
+                    <div class="value" id="gastosPeriodoComparativa">$ 0</div>
+                    <div class="delta neutral" id="deltaRetenciones">Compras y egresos</div>
                 </div>
             </div>
 
@@ -1619,6 +1887,11 @@
             return json;
         }
 
+        function toLocalDateInput(date = new Date()) {
+            const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+            return local.toISOString().slice(0, 10);
+        }
+
         // ===== FILTROS =====
         function setDefaultFilters() {
             const now = new Date();
@@ -1665,7 +1938,7 @@
                     break;
             }
 
-            const format = (d) => d.toISOString().slice(0, 10);
+            const format = (d) => toLocalDateInput(d);
             document.getElementById('fechaInicio').value = format(start);
             document.getElementById('fechaFin').value = format(end);
             document.getElementById('filtroAnio').value = now.getFullYear();
@@ -1684,8 +1957,8 @@
                 if (month) {
                     const startDate = new Date(year, month - 1, 1);
                     const endDate = new Date(year, month, 0);
-                    start = startDate.toISOString().slice(0, 10);
-                    end = endDate.toISOString().slice(0, 10);
+                    start = toLocalDateInput(startDate);
+                    end = toLocalDateInput(endDate);
                 } else {
                     start = `${year}-01-01`;
                     end = `${year}-12-31`;
@@ -1720,7 +1993,238 @@
             else console.warn(`Elemento con ID ${id} no encontrado`);
         }
 
+        window.eliminarCompraProveedor = async function eliminarCompraProveedor(telefono, compraId) {
+            if (!telefono || !compraId) return;
+            const confirmar = window.confirm('¿Deseas eliminar esta compra del proveedor?');
+            if (!confirmar) return;
+            try {
+                const result = await apiRequest(`/proveedor/${telefono}/compra/${compraId}`, 'DELETE');
+                if (!result.success) throw new Error(result.message || 'No se pudo eliminar la compra');
+                showNotification('Compra eliminada correctamente', 'success');
+                if (typeof abrirDetalleProveedor === 'function') {
+                    await abrirDetalleProveedor(telefono);
+                }
+                if (typeof cargarDatosCompletos === 'function') {
+                    await cargarDatosCompletos();
+                }
+            } catch (error) {
+                console.error('Error eliminando compra del proveedor:', error);
+                showNotification(error.message || 'No se pudo eliminar la compra', 'error');
+            }
+        };
+
+        // ================================================================
+        // ===== SISTEMA DE AYUDA (POPOVER) =====
+        // ================================================================
+        const ayudaContenido = {
+            ingresos: {
+                titulo: '¿Qué son los Ingresos brutos?',
+                texto: 'Es <strong>todo el dinero que entró al negocio</strong> por las ventas que hiciste, sin importar si te pagaron de contado o te deben. Es como el "total de la cuenta" antes de restar cualquier gasto.',
+                formula: 'Suma de todas las ventas (contado + crédito)',
+                ejemplo: '<strong>Ejemplo:</strong> Si vendiste $10.000.000 en productos, tus ingresos brutos son $10.000.000.',
+                consejo: '<strong>Ojo:</strong> Si este número crece mes a mes, ¡vas por buen camino! Si baja, toca revisar las ventas.'
+            },
+            costo_ventas: {
+                titulo: '¿Qué es el Costo de ventas?',
+                texto: 'Es <strong>lo que te costó comprar o producir</strong> los productos que vendiste. No es lo que gastaste en el negocio en general, sino específicamente el precio que pagaste por la mercancía que se fue con los clientes.',
+                formula: 'Suma de (cantidad vendida × precio de costo)',
+                ejemplo: '<strong>Ejemplo:</strong> Si compraste un producto a $5.000 y lo vendiste a $10.000, tu costo de ventas es $5.000.',
+                consejo: '<strong>Ojo:</strong> Si este número es muy alto comparado con los ingresos, significa que estás comprando caro o vendiendo barato. ¡Negocia mejores precios con tus proveedores!'
+            },
+            utilidad_neta: {
+                titulo: '¿Qué es la Utilidad neta?',
+                texto: 'Es <strong>la ganancia REAL que te queda</strong> después de restar TODOS los costos y gastos. Es el dinero que realmente ganaste, no lo que vendiste. Es el indicador más importante de tu negocio.',
+                formula: 'Ingresos brutos - Costo de ventas - Gastos operativos - Egresos de caja',
+                ejemplo: '<strong>Ejemplo:</strong> Si vendiste $10.000.000, te costaron $6.000.000 y gastaste $2.000.000, tu utilidad neta es $2.000.000.',
+                consejo: '<strong>Ojo:</strong> Si es positivo, ¡felicidades! Tu negocio es rentable. Si es negativo, estás perdiendo dinero y hay que actuar rápido.'
+            },
+            flujo_caja: {
+                titulo: '¿Qué es el Flujo de caja?',
+                texto: 'Es <strong>el efectivo REAL que tienes disponible</strong>. No es lo mismo que la utilidad: puedes tener mucha utilidad pero poco efectivo porque te deben plata (créditos). Este indicador te dice si tienes dinero en la mano para operar.',
+                formula: 'Cobros reales - Egresos de caja',
+                ejemplo: '<strong>Ejemplo:</strong> Si cobraste $8.000.000 en efectivo y pagaste $5.000.000 en efectivo, tu flujo de caja es $3.000.000.',
+                consejo: '<strong>Ojo:</strong> Si es positivo, tienes efectivo para operar. Si es negativo, necesitas financiamiento o estás cobrando mal tus créditos.'
+            },
+            ventas_contado: {
+                titulo: '¿Qué son las Ventas contado?',
+                texto: 'Son <strong>las ventas que te pagaron de inmediato</strong>, en efectivo o con medios electrónicos como Nequi, tarjeta débito o transferencia. Es el dinero que entra a tu caja en el momento de la venta.',
+                formula: 'Suma de todas las ventas donde el cliente pagó al momento',
+                ejemplo: '<strong>Ejemplo:</strong> Un cliente compra y paga con efectivo o Nequi en ese momento. Esa es una venta de contado.',
+                consejo: '<strong>Ojo:</strong> Si esta cifra es alta, tu negocio tiene buena liquidez. Si es baja, dependes mucho de los créditos para vender.'
+            },
+            ventas_credito: {
+                titulo: '¿Qué son las Ventas crédito?',
+                texto: 'Son <strong>las ventas donde el cliente se llevó el producto pero te va a pagar después</strong> (a 15, 30 o más días). Es dinero que está "fuera" de tu caja porque te lo deben.',
+                formula: 'Suma de todas las ventas a crédito',
+                ejemplo: '<strong>Ejemplo:</strong> Un cliente compra y dice "págueme en 15 días". Esa es una venta a crédito.',
+                consejo: '<strong>Ojo:</strong> Si es muy alta, estás asumiendo un gran riesgo. Hay que cobrar bien los créditos y tener políticas claras.'
+            },
+            cobros_reales: {
+                titulo: '¿Qué son los Cobros reales?',
+                texto: 'Es <strong>el dinero en efectivo que realmente entró al negocio</strong>. Incluye las ventas de contado, los abonos que te hicieron los clientes que te debían y los anticipos que te pagaron por adelantado.',
+                formula: 'Ventas contado + Abonos de créditos + Anticipos recibidos',
+                ejemplo: '<strong>Ejemplo:</strong> Si vendiste $5.000.000 de contado y te abonaron $2.000.000 de créditos, tus cobros reales son $7.000.000.',
+                consejo: '<strong>Ojo:</strong> Si es similar a tus ingresos brutos, ¡cobras bien! Si es mucho menor, hay que mejorar la gestión de cobros.'
+            },
+            saldo_pendiente: {
+                titulo: '¿Qué es el Saldo pendiente?',
+                texto: 'Es <strong>el dinero que los clientes aún te deben</strong> por compras a crédito que no han pagado. También se le llama "cartera" o "cuentas por cobrar". Es plata que está fuera de tu caja.',
+                formula: 'Ventas crédito - Abonos de créditos',
+                ejemplo: '<strong>Ejemplo:</strong> Si vendiste $10.000.000 a crédito y te han abonado $4.000.000, tu saldo pendiente es $6.000.000.',
+                consejo: '<strong>Ojo:</strong> Si esta cifra sube constantemente, ¡alerta! Hay que revisar las políticas de crédito y cobranza.'
+            },
+            gastos_operativos: {
+                titulo: '¿Qué son los Gastos operativos?',
+                texto: 'Es <strong>todo el dinero que gastaste en compras a proveedores</strong> para tener inventario. Es el gasto más grande que tiene un negocio de retail como AgroVet.',
+                formula: 'Suma de todas las compras a proveedores en el período',
+                ejemplo: '<strong>Ejemplo:</strong> Si le compraste mercancía a 5 proveedores y en total gastaste $8.000.000, ese es tu gasto operativo.',
+                consejo: '<strong>Ojo:</strong> Si crece más rápido que tus ingresos, tu rentabilidad se reduce. Negocia mejores precios con tus proveedores.'
+            },
+            egresos_caja: {
+                titulo: '¿Qué son los Egresos caja?',
+                texto: 'Es <strong>todo el dinero en efectivo que salió del negocio</strong>. Incluye pagos a proveedores, servicios públicos, sueldos, arriendo, etc. Es todo lo que gastaste en efectivo.',
+                formula: 'Suma de todas las salidas de efectivo',
+                ejemplo: '<strong>Ejemplo:</strong> Pagaste $3.000.000 a proveedores, $1.000.000 de servicios y $2.000.000 de sueldos. Tus egresos de caja son $6.000.000.',
+                consejo: '<strong>Ojo:</strong> Si es mayor que los ingresos de caja, estás gastando más de lo que recibes. ¡Cuidado con la liquidez!'
+            },
+            gastos_periodo: {
+                titulo: '¿Qué son los Gastos del período?',
+                texto: 'Es <strong>el total de compras y egresos que registraste en el período</strong>. Incluye todas las salidas de dinero del negocio, tanto en efectivo como en compras a crédito con proveedores.',
+                formula: 'Compras del período + Egresos de caja',
+                ejemplo: '<strong>Ejemplo:</strong> Compraste $5.000.000 en mercancía y pagaste $3.000.000 en efectivo. Tus gastos del período son $8.000.000.',
+                consejo: '<strong>Ojo:</strong> Este número te ayuda a entender cuánto estás gastando en total. Si es muy alto, busca formas de reducir costos.'
+            },
+            base_gasto: {
+                titulo: '¿Qué son las Deducciones base?',
+                texto: 'Es <strong>el valor base que puedes usar para deducir impuestos</strong> en tu declaración de renta. Básicamente, es el monto sobre el cual puedes aplicar beneficios fiscales para pagar menos impuestos.',
+                formula: 'Base de costo de adquisición de productos',
+                ejemplo: '<strong>Ejemplo:</strong> Si compraste productos por $10.000.000, esa es tu base para deducciones. Puedes deducir un porcentaje de eso en tu declaración de renta.',
+                consejo: '<strong>Ojo:</strong> Este valor te ayuda a planificar tu declaración de renta y saber cuánto puedes ahorrar en impuestos.'
+            },
+            utilidad_bruta: {
+                titulo: '¿Qué es la Utilidad bruta?',
+                texto: 'Es <strong>la ganancia que te queda antes de restar los gastos del negocio</strong>. Es la diferencia entre lo que vendiste y lo que te costaron los productos. No incluye gastos como servicios, sueldos o arriendo.',
+                formula: 'Ingresos brutos - Costo de ventas',
+                ejemplo: '<strong>Ejemplo:</strong> Vendiste $10.000.000 y los productos te costaron $6.000.000. Tu utilidad bruta es $4.000.000.',
+                consejo: '<strong>Ojo:</strong> Si es positiva, significa que vendes por encima de lo que te cuestan los productos. ¡Es una buena señal!'
+            },
+            margen_bruto: {
+                titulo: '¿Qué es el Margen bruto?',
+                texto: 'Es <strong>el porcentaje de ganancia que obtienes por cada peso que vendes</strong>, sin contar los gastos del negocio. Te dice qué tan rentable es cada producto que vendes.',
+                formula: '(Utilidad bruta / Ingresos brutos) × 100',
+                ejemplo: '<strong>Ejemplo:</strong> Si tu utilidad bruta es $4.000.000 y vendiste $10.000.000, tu margen bruto es 40%. ¡Eso es excelente!',
+                consejo: '<strong>Ojo:</strong> Un margen saludable está entre 25% y 40%. Si es menor al 20%, tus productos no están dejando suficiente ganancia.'
+            },
+            margen_neto: {
+                titulo: '¿Qué es el Margen neto?',
+                texto: 'Es <strong>el porcentaje de ganancia REAL que te queda después de TODOS los gastos</strong>. Es el indicador más importante de rentabilidad. Te dice cuánto dinero realmente te queda de cada peso que vendes.',
+                formula: '(Utilidad neta / Ingresos brutos) × 100',
+                ejemplo: '<strong>Ejemplo:</strong> Si tu utilidad neta es $2.000.000 y vendiste $10.000.000, tu margen neto es 20%. ¡Muy buen negocio!',
+                consejo: '<strong>Ojo:</strong> Un margen neto saludable está entre 5% y 15%. Si es menor al 3%, el negocio está en zona crítica. Si es mayor al 15%, ¡excelente!'
+            },
+            margen_estimado: {
+                titulo: '¿Qué es el Margen estimado?',
+                texto: 'Es <strong>una estimación del margen operativo</strong> basada en los datos disponibles. Te da una idea de la rentabilidad después de cubrir todos los gastos.',
+                formula: 'Diferencia entre ingresos y gastos operativos',
+                ejemplo: '<strong>Ejemplo:</strong> Si tus ingresos son $10.000.000 y tus gastos operativos son $7.000.000, tu margen estimado es $3.000.000.',
+                consejo: '<strong>Ojo:</strong> Te ayuda a entender si tu negocio es rentable después de cubrir todos sus gastos.'
+            },
+            periodo_actual: {
+                titulo: '¿Qué es el Período actual?',
+                texto: 'Es <strong>la utilidad neta del período que seleccionaste en los filtros</strong> (el mes, trimestre o año que estás viendo). Te muestra cómo está el negocio en ese momento específico.',
+                formula: 'Utilidad neta del rango de fechas seleccionado',
+                ejemplo: '<strong>Ejemplo:</strong> Si seleccionaste Enero 2024, este número te dice cuánto ganaste en ese mes.',
+                consejo: '<strong>Ojo:</strong> Te ayuda a saber si el negocio está mejorando o empeorando con el tiempo.'
+            },
+            periodo_anterior: {
+                titulo: '¿Qué es el Período anterior?',
+                texto: 'Es <strong>la utilidad neta del período inmediatamente anterior</strong> al que seleccionaste. Te permite comparar el rendimiento actual con el pasado para ver si estás mejorando.',
+                formula: 'Utilidad neta del período anterior al seleccionado',
+                ejemplo: '<strong>Ejemplo:</strong> Si seleccionaste Enero 2024, este número te muestra lo que ganaste en Diciembre 2023.',
+                consejo: '<strong>Ojo:</strong> La comparación te ayuda a identificar tendencias: ¿estás creciendo, estancado o decreciendo?'
+            },
+            deducciones: {
+                titulo: '¿Qué son las Deducciones estimadas?',
+                texto: 'Es <strong>el monto estimado que puedes deducir en tu declaración de renta</strong> para pagar menos impuestos. Es aproximadamente el 25% de tu base de costo.',
+                formula: 'Base de costo × 25% (aproximación fiscal)',
+                ejemplo: '<strong>Ejemplo:</strong> Si tu base de costo es $10.000.000, puedes deducir aproximadamente $2.500.000 en tu declaración de renta.',
+                consejo: '<strong>Ojo:</strong> Este valor te ayuda a planificar cuánto vas a pagar de impuestos. Si es alto, pagarás menos impuestos.'
+            },
+            gastos_comparativa: {
+                titulo: '¿Qué son los Gastos del período (comparativa)?',
+                texto: 'Es <strong>el total de compras y egresos del período actual</strong>. Te permite ver cómo se está comportando el gasto comparado con períodos anteriores.',
+                formula: 'Compras del período + Egresos de caja',
+                ejemplo: '<strong>Ejemplo:</strong> Si gastaste $8.000.000 en este período, ese es el valor que ves aquí.',
+                consejo: '<strong>Ojo:</strong> Si este número está subiendo más rápido que tus ingresos, ¡alerta! Tus gastos están creciendo descontroladamente.'
+            }
+        };
+
+        function mostrarAyuda(clave) {
+            const contenido = ayudaContenido[clave];
+            if (!contenido) {
+                console.warn(`No hay ayuda para la clave: ${clave}`);
+                return;
+            }
+
+            const popover = document.getElementById('helpPopover');
+            const overlay = document.getElementById('helpOverlay');
+            const titulo = document.getElementById('popoverTitulo');
+            const cuerpo = document.getElementById('popoverCuerpo');
+
+            titulo.textContent = contenido.titulo;
+
+            let html = `
+                <p>${contenido.texto}</p>
+            `;
+
+            if (contenido.formula) {
+                html += `
+                    <div style="margin: 10px 0;">
+                        <strong>Fórmula:</strong>
+                        <div class="formula">${contenido.formula}</div>
+                    </div>
+                `;
+            }
+
+            if (contenido.ejemplo) {
+                html += `
+                    <div style="margin: 8px 0; padding: 10px 14px; background: #f0f7f4; border-radius: 8px; border-left: 3px solid var(--teal);">
+                        ${contenido.ejemplo}
+                    </div>
+                `;
+            }
+
+            if (contenido.consejo) {
+                html += `
+                    <div style="margin: 8px 0; padding: 10px 14px; background: #fef9e7; border-radius: 8px; border-left: 3px solid var(--mostaza);">
+                        ${contenido.consejo}
+                    </div>
+                `;
+            }
+
+            cuerpo.innerHTML = html;
+
+            popover.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function cerrarAyuda() {
+            document.getElementById('helpPopover').classList.remove('active');
+            document.getElementById('helpOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Cerrar con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarAyuda();
+            }
+        });
+
+        // ================================================================
         // ===== CARGAR DATOS PRINCIPALES =====
+        // ================================================================
         async function cargarDatosCompletos() {
             showLoading(true);
             const { start, end } = getRangeFromFilters();
@@ -1749,7 +2253,7 @@
                 // ===== COSTOS Y GASTOS =====
                 updateElement('gastosOperativos', formatCurrency(resumen.gastos_totales || 0));
                 updateElement('egresosCaja', formatCurrency(resumen.egresos_caja || 0));
-                updateElement('ivaSoportado', formatCurrency(resumen.total_iva_soportado || 0));
+                updateElement('gastosPeriodo', formatCurrency(resumen.gastos_totales || 0));
                 updateElement('baseGasto', formatCurrency(resumen.base_gasto || 0));
 
                 // ===== RENTABILIDAD =====
@@ -1864,7 +2368,7 @@
                 updateElement('periodoActual', formatCurrency(currentValue));
                 updateElement('periodoAnterior', formatCurrency(previousValue));
                 updateElement('deduccionesTotales', formatCurrency(Number(actual.base_gasto || 0)));
-                updateElement('retencionesIva', formatCurrency(Number(actual.total_iva_soportado || 0)));
+                updateElement('gastosPeriodoComparativa', formatCurrency(Number(actual.gastos_totales || 0)));
 
                 const deltaEl = document.getElementById('deltaPeriodoActual');
                 const deltaAnteriorEl = document.getElementById('deltaPeriodoAnterior');
@@ -1888,9 +2392,9 @@
                     }
                 }
 
-                if (deduccionesEl) deduccionesEl.textContent = `Base: ${formatCurrency(Number(actual.base_gasto || 0) * 0.25)}`;
+                if (deduccionesEl) deduccionesEl.textContent = `Base: ${formatCurrency(Number(actual.base_gasto || 0))}`;
                 if (retencionesEl) retencionesEl.textContent =
-                `IVA: ${formatCurrency(Number(actual.total_iva_soportado || 0))}`;
+                `Compras: ${formatCurrency(Number(actual.gastos_totales || 0))}`;
 
             } catch (error) {
                 console.error('Error cargando comparativa:', error);
@@ -2012,8 +2516,8 @@
                             <span>${formatDate(resumen.ultima_compra)}</span>
                         </div>
                         <div class="detail-box">
-                            <strong>IVA soportado</strong>
-                            <span>${formatCurrency(resumen.iva_soportado || 0)}</span>
+                            <strong>Gastos del período</strong>
+                            <span>${formatCurrency(resumen.total_compras || 0)}</span>
                         </div>
                     </div>
                     ${compras.length ? `
@@ -2027,6 +2531,7 @@
                                     <th>Producto</th>
                                     <th>Cantidad</th>
                                     <th>Valor</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2036,6 +2541,7 @@
                                         <td>${item.producto || 'Sin producto'}</td>
                                         <td>${Number(item.cantidad || 0).toLocaleString('es-CO')}</td>
                                         <td>${formatCurrency(item.total_compra || 0)}</td>
+                                        <td><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation(); window.eliminarCompraProveedor('${telefono}', ${Number(item.id)});"><i class="fas fa-trash"></i></button></td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -2056,10 +2562,10 @@
         }
 
         // ================================================================
-        // ===== EXPORTAR PDF PROFESIONAL MEJORADO =====
+        // ===== EXPORTAR PDF PROFESIONAL =====
         // ================================================================
         function exportarPdfReporte() {
-            showNotification('Generando PDF profesional con 4 secciones...', 'info');
+            showNotification('Generando PDF profesional...', 'info');
 
             try {
                 const { jsPDF } = window.jspdf;
@@ -2071,21 +2577,17 @@
                 const year = document.getElementById('filtroAnio').value || now.getFullYear();
                 const resumen = cachedData.resumen || {};
                 const topProveedores = cachedData.top_proveedores || [];
-                const porMes = cachedData.por_mes || [];
 
-                // =============================================================
-                // PÁGINA 1: PORTADA Y RESUMEN EJECUTIVO
-                // =============================================================
-
-                // HEADER
+                // PORTADA
                 pdf.setFillColor(31, 138, 134);
-                pdf.rect(0, 0, a4Width, 75, 'F');
+                pdf.rect(0, 0, a4Width, 85, 'F');
                 pdf.setTextColor(255, 255, 255);
                 pdf.setFontSize(28);
                 pdf.text('AGROVET', 40, 42);
-                pdf.setFontSize(14);
-                pdf.text('Declaración de Renta', 40, 60);
-                pdf.text('Resumen Fiscal Ejecutivo', 40, 76);
+                pdf.setFontSize(16);
+                pdf.text('Reporte Financiero', 40, 62);
+                pdf.setFontSize(11);
+                pdf.text('Resumen ejecutivo de compras, costos y rentabilidad', 40, 78);
 
                 pdf.setTextColor(200, 138, 103);
                 pdf.setFontSize(9);
@@ -2093,57 +2595,60 @@
                 pdf.text(`Año fiscal: ${year}`, a4Width - 190, 56);
                 pdf.text(`Generado: ${now.toLocaleString('es-CO')}`, a4Width - 190, 70);
 
-                // RESUMEN EJECUTIVO
-                let yPos = 110;
+                let yPos = 120;
+
+                // ===== SECCIÓN 1: INDICADORES CLAVE =====
                 pdf.setTextColor(44, 62, 80);
                 pdf.setFontSize(14);
-                pdf.text('RESUMEN EJECUTIVO', 40, yPos);
+                pdf.text('1. INDICADORES CLAVE', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(31, 138, 134);
                 pdf.line(40, yPos, a4Width - 40, yPos);
                 yPos += 14;
 
-                const executiveData = [
-                    ['Ingresos brutos', document.getElementById('ingresoBruto').textContent, 'Total de ventas del período'],
-                    ['Costo de ventas', document.getElementById('costoVentas').textContent, 'Costo de productos vendidos'],
-                    ['Utilidad neta', document.getElementById('utilidadNeta').textContent, 'Ingresos - Costos - Gastos'],
-                    ['Flujo de caja', document.getElementById('flujoCaja').textContent, 'Cobros reales - Egresos']
+                const kpiData = [
+                    ['💵 Ingresos brutos', document.getElementById('ingresoBruto').textContent,
+                        'Todo el dinero que entró por ventas.'],
+                    ['📦 Costo de ventas', document.getElementById('costoVentas').textContent,
+                        'Lo que costaron los productos vendidos.'],
+                    ['💰 Utilidad neta', document.getElementById('utilidadNeta').textContent,
+                        'Ganancia real después de todos los gastos.'],
+                    ['💳 Flujo de caja', document.getElementById('flujoCaja').textContent,
+                        'Efectivo disponible en caja.']
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Concepto', 'Valor', 'Descripción']],
-                    body: executiveData,
+                    head: [['Indicador', 'Valor', '¿Qué significa?']],
+                    body: kpiData,
                     theme: 'grid',
                     headStyles: { fillColor: [31, 138, 134], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 9 },
-                    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 150 } },
-                    margin: { left: 40, right: 40 },
-                    tableWidth: a4Width - 80
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
+                    margin: { left: 40, right: 40 }
                 });
                 yPos = pdf.lastAutoTable.finalY + 16;
 
-                // =============================================================
-                // SECCIÓN 1: INGRESOS Y COBROS
-                // =============================================================
+                // ===== SECCIÓN 2: INGRESOS Y COBROS =====
+                if (yPos > a4Height - 120) { pdf.addPage();
+                    yPos = 40; }
                 pdf.setFontSize(13);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('1. INGRESOS Y COBROS', 40, yPos);
+                pdf.text('2. INGRESOS Y COBROS', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(39, 174, 96);
                 pdf.line(40, yPos, 200, yPos);
                 yPos += 12;
 
                 const ingresosData = [
-                    ['Ventas de contado', document.getElementById('ventasContado').textContent,
-                        'Ingresos inmediatos en efectivo'
-                    ],
-                    ['Ventas a crédito', document.getElementById('ventasCredito').textContent,
-                        'Ventas financiadas a clientes'],
-                    ['Cobros reales', document.getElementById('cobrosReales').textContent,
-                        'Contado + abonos + anticipos recibidos'],
-                    ['Saldo pendiente', document.getElementById('saldoPendiente').textContent,
-                        'Cartera total por cobrar']
+                    ['💳 Ventas contado', document.getElementById('ventasContado').textContent,
+                        'Ventas pagadas de inmediato.'],
+                    ['📋 Ventas crédito', document.getElementById('ventasCredito').textContent,
+                        'Ventas que te deben pagar.'],
+                    ['💵 Cobros reales', document.getElementById('cobrosReales').textContent,
+                        'Dinero que realmente entró.'],
+                    ['⚠️ Saldo pendiente', document.getElementById('saldoPendiente').textContent,
+                        'Lo que los clientes aún deben.']
                 ];
 
                 pdf.autoTable({
@@ -2152,34 +2657,32 @@
                     body: ingresosData,
                     theme: 'grid',
                     headStyles: { fillColor: [39, 174, 96], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 9 },
-                    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 150 } },
-                    margin: { left: 40, right: 40 },
-                    tableWidth: a4Width - 80
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
+                    margin: { left: 40, right: 40 }
                 });
                 yPos = pdf.lastAutoTable.finalY + 16;
 
-                // =============================================================
-                // SECCIÓN 2: COSTOS Y GASTOS
-                // =============================================================
+                // ===== SECCIÓN 3: COSTOS Y GASTOS =====
+                if (yPos > a4Height - 120) { pdf.addPage();
+                    yPos = 40; }
                 pdf.setFontSize(13);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('2. COSTOS Y GASTOS OPERATIVOS', 40, yPos);
+                pdf.text('3. COSTOS Y GASTOS', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(196, 138, 103);
-                pdf.line(40, yPos, 250, yPos);
+                pdf.line(40, yPos, 230, yPos);
                 yPos += 12;
 
                 const gastosData = [
-                    ['Gastos operativos', document.getElementById('gastosOperativos').textContent,
-                        'Compras a proveedores del período'
-                    ],
-                    ['Egresos de caja', document.getElementById('egresosCaja').textContent,
-                        'Salidas totales de efectivo'],
-                    ['IVA soportado', document.getElementById('ivaSoportado').textContent,
-                        '19% de los gastos operativos'],
-                    ['Base de costo', document.getElementById('baseGasto').textContent,
-                        'Valor base para deducciones']
+                    ['📦 Gastos operativos', document.getElementById('gastosOperativos').textContent,
+                        'Compras a proveedores.'],
+                    ['🏦 Egresos caja', document.getElementById('egresosCaja').textContent,
+                        'Todo el dinero que salió.'],
+                    ['📊 Gastos del período', document.getElementById('gastosPeriodo').textContent,
+                        'Total de compras y egresos.'],
+                    ['🧾 Base de costo', document.getElementById('baseGasto').textContent,
+                        'Valor para deducciones fiscales.']
                 ];
 
                 pdf.autoTable({
@@ -2188,66 +2691,52 @@
                     body: gastosData,
                     theme: 'grid',
                     headStyles: { fillColor: [196, 138, 103], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 9 },
-                    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 150 } },
-                    margin: { left: 40, right: 40 },
-                    tableWidth: a4Width - 80
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
+                    margin: { left: 40, right: 40 }
                 });
                 yPos = pdf.lastAutoTable.finalY + 16;
 
-                // Verificar si necesitamos nueva página
-                if (yPos > a4Height - 120) {
-                    pdf.addPage();
-                    yPos = 40;
-                }
-
-                // =============================================================
-                // SECCIÓN 3: RENTABILIDAD Y MARGEN
-                // =============================================================
+                // ===== SECCIÓN 4: RENTABILIDAD =====
+                if (yPos > a4Height - 120) { pdf.addPage();
+                    yPos = 40; }
                 pdf.setFontSize(13);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('3. RENTABILIDAD Y MARGEN', 40, yPos);
+                pdf.text('4. RENTABILIDAD Y MARGEN', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(217, 195, 87);
                 pdf.line(40, yPos, 230, yPos);
                 yPos += 12;
 
                 const rentabData = [
-                    ['Utilidad bruta', document.getElementById('utilidadBruta').textContent,
-                        'Ingresos - Costo de ventas'],
-                    ['Margen bruto', document.getElementById('margenBruto').textContent,
-                        'Utilidad bruta / Ingresos'],
-                    ['Margen neto', document.getElementById('margenNeto').textContent,
-                        'Utilidad neta / Ingresos'],
-                    ['Margen estimado', document.getElementById('margenEstimado').textContent,
-                        'Diferencia operativa estimada']
+                    ['📊 Utilidad bruta', document.getElementById('utilidadBruta').textContent,
+                        'Ganancia antes de gastos.'],
+                    ['📈 Margen bruto', document.getElementById('margenBruto').textContent,
+                        'Saludable: 25%-40% | Crítico: <20%'],
+                    ['📈 Margen neto', document.getElementById('margenNeto').textContent,
+                        'Saludable: 5%-15% | Crítico: <3%'],
+                    ['📊 Margen estimado', document.getElementById('margenEstimado').textContent,
+                        'Diferencia operativa estimada.']
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Concepto', 'Valor', 'Fórmula']],
+                    head: [['Concepto', 'Valor', 'Interpretación']],
                     body: rentabData,
                     theme: 'grid',
                     headStyles: { fillColor: [217, 195, 87], textColor: 44, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 9 },
-                    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 150 } },
-                    margin: { left: 40, right: 40 },
-                    tableWidth: a4Width - 80
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
+                    margin: { left: 40, right: 40 }
                 });
                 yPos = pdf.lastAutoTable.finalY + 16;
 
-                // Verificar si necesitamos nueva página
-                if (yPos > a4Height - 120) {
-                    pdf.addPage();
-                    yPos = 40;
-                }
-
-                // =============================================================
-                // SECCIÓN 4: TOP PROVEEDORES
-                // =============================================================
+                // ===== SECCIÓN 5: TOP PROVEEDORES =====
+                if (yPos > a4Height - 120) { pdf.addPage();
+                    yPos = 40; }
                 pdf.setFontSize(13);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('4. TOP 10 PROVEEDORES', 40, yPos);
+                pdf.text('5. PRINCIPALES PROVEEDORES', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(31, 138, 134);
                 pdf.line(40, yPos, 200, yPos);
@@ -2268,10 +2757,9 @@
                         theme: 'striped',
                         headStyles: { fillColor: [31, 138, 134], textColor: 255, fontSize: 9, fontStyle: 'bold' },
                         bodyStyles: { fontSize: 8 },
-                        columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 70,
+                        columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 70,
                                 halign: 'right' } },
-                        margin: { left: 40, right: 40 },
-                        tableWidth: a4Width - 80
+                        margin: { left: 40, right: 40 }
                     });
                     yPos = pdf.lastAutoTable.finalY + 16;
                 } else {
@@ -2281,30 +2769,25 @@
                     yPos += 30;
                 }
 
-                // =============================================================
-                // SECCIÓN 5: ANÁLISIS COMPARATIVO
-                // =============================================================
-                if (yPos > a4Height - 150) {
-                    pdf.addPage();
-                    yPos = 40;
-                }
-
+                // ===== SECCIÓN 6: ANÁLISIS COMPARATIVO =====
+                if (yPos > a4Height - 120) { pdf.addPage();
+                    yPos = 40; }
                 pdf.setFontSize(13);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('5. ANÁLISIS COMPARATIVO', 40, yPos);
+                pdf.text('6. ANÁLISIS COMPARATIVO', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(52, 152, 219);
                 pdf.line(40, yPos, 210, yPos);
                 yPos += 12;
 
                 const comparativaData = [
-                    ['Período actual', document.getElementById('periodoActual').textContent,
+                    ['📅 Período actual', document.getElementById('periodoActual').textContent,
                         document.getElementById('deltaPeriodoActual').textContent],
-                    ['Período anterior', document.getElementById('periodoAnterior').textContent,
+                    ['📅 Período anterior', document.getElementById('periodoAnterior').textContent,
                         document.getElementById('deltaPeriodoAnterior').textContent],
-                    ['Deducciones estimadas', document.getElementById('deduccionesTotales').textContent,
+                    ['🧾 Deducciones base', document.getElementById('deduccionesTotales').textContent,
                         document.getElementById('deltaDeducciones').textContent],
-                    ['Retenciones / IVA', document.getElementById('retencionesIva').textContent,
+                    ['📊 Gastos del período', document.getElementById('gastosPeriodoComparativa').textContent,
                         document.getElementById('deltaRetenciones').textContent]
                 ];
 
@@ -2314,24 +2797,18 @@
                     body: comparativaData,
                     theme: 'grid',
                     headStyles: { fillColor: [52, 152, 219], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 9 },
-                    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 150 } },
-                    margin: { left: 40, right: 40 },
-                    tableWidth: a4Width - 80
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
+                    margin: { left: 40, right: 40 }
                 });
                 yPos = pdf.lastAutoTable.finalY + 16;
 
-                // =============================================================
-                // INDICADORES DE EFICIENCIA
-                // =============================================================
-                if (yPos > a4Height - 120) {
-                    pdf.addPage();
-                    yPos = 40;
-                }
-
+                // ===== SECCIÓN 7: EFICIENCIA =====
+                if (yPos > a4Height - 120) { pdf.addPage();
+                    yPos = 40; }
                 pdf.setFontSize(13);
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('6. INDICADORES DE EFICIENCIA', 40, yPos);
+                pdf.text('7. INDICADORES DE EFICIENCIA', 40, yPos);
                 yPos += 10;
                 pdf.setDrawColor(217, 195, 87);
                 pdf.line(40, yPos, 260, yPos);
@@ -2345,13 +2822,19 @@
                 const saldoRatio = ingresos ? (saldo / ingresos) * 100 : 0;
                 const eficienciaRatio = ingresos ? (utilidadNeta / ingresos) * 100 : 0;
                 const baseLiquidez = (Number(resumen.egresos_caja || 0) + gastos) || 1;
-                const liquidezRatio = Number(resumen.cobros_reales || 0) ? ((Number(resumen.cobros_reales || 0) / baseLiquidez) * 100) : 0;
+                const liquidezRatio = Number(resumen.cobros_reales || 0) ? ((Number(resumen.cobros_reales || 0) / baseLiquidez) *
+                    100) : 0;
 
                 const eficienciaData = [
-                    ['Rotación de gastos', ingresos ? `${gastoRatio.toFixed(2)}%` : 'N/A', ingresos ? (gastoRatio < 60 ? '✓ Óptimo' : '⚠ Revisar') : 'N/A'],
-                    ['Cartera / Ingresos', ingresos ? `${saldoRatio.toFixed(2)}%` : 'N/A', ingresos ? (saldoRatio < 30 ? '✓ Saludable' : '⚠ Alta cartera') : 'N/A'],
-                    ['Eficiencia operativa', ingresos ? `${eficienciaRatio.toFixed(2)}%` : 'N/A', ingresos ? (eficienciaRatio > 15 ? '✓ Excelente' : '⚠ Mejorable') : 'N/A'],
-                    ['Liquidez', Number(resumen.cobros_reales || 0) ? `${liquidezRatio.toFixed(2)}%` : 'N/A', Number(resumen.cobros_reales || 0) ? (liquidezRatio > 120 ? '✓ Buena' : '⚠ Precaución') : 'N/A']
+                    ['🔄 Rotación de gastos', ingresos ? `${gastoRatio.toFixed(2)}%` : 'N/A', gastoRatio < 60 ?
+                        '✅ Óptimo (<60%)' : '⚠️ Revisar (>60%)'],
+                    ['📊 Cartera / Ingresos', ingresos ? `${saldoRatio.toFixed(2)}%` : 'N/A', saldoRatio < 30 ?
+                        '✅ Saludable (<30%)' : '⚠️ Alta cartera (>30%)'],
+                    ['⚡ Eficiencia operativa', ingresos ? `${eficienciaRatio.toFixed(2)}%` : 'N/A', eficienciaRatio > 15 ?
+                        '✅ Excelente (>15%)' : '⚠️ Mejorable (<15%)'],
+                    ['💧 Liquidez', Number(resumen.cobros_reales || 0) ? `${liquidezRatio.toFixed(2)}%` : 'N/A',
+                        liquidezRatio > 120 ? '✅ Buena (>120%)' : '⚠️ Precaución (<120%)'
+                    ]
                 ];
 
                 pdf.autoTable({
@@ -2360,30 +2843,23 @@
                     body: eficienciaData,
                     theme: 'grid',
                     headStyles: { fillColor: [217, 195, 87], textColor: 44, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 9 },
-                    columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 150 } },
-                    margin: { left: 40, right: 40 },
-                    tableWidth: a4Width - 80
+                    bodyStyles: { fontSize: 8 },
+                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
+                    margin: { left: 40, right: 40 }
                 });
                 yPos = pdf.lastAutoTable.finalY + 16;
 
-                // =============================================================
                 // FOOTER
-                // =============================================================
                 const footerY = Math.max(yPos + 20, a4Height - 50);
                 pdf.setFontSize(8);
                 pdf.setTextColor(127, 140, 141);
-                pdf.text('Declaración de Renta - Resumen de resultado fiscal para propósitos de apoyo contable y tributario.',
-                    40, footerY);
-                pdf.text(`AgroVet © ${year} | Sistema POS | Documento generado automáticamente - Página ${pdf.getNumberOfPages()}`,
-                    40, footerY + 14);
-                pdf.text(`Código: DR-${year}-${now.getTime().toString().slice(-6)}`, a4Width - 160, footerY + 14);
+                pdf.text('Reporte financiero - Resumen de compras, costos, rentabilidad y flujo de caja.', 40, footerY);
+                pdf.text(`AgroVet © ${year} | Sistema POS | Página ${pdf.getNumberOfPages()}`, 40, footerY + 14);
+                pdf.text(`Código: RF-${year}-${now.getTime().toString().slice(-6)}`, a4Width - 160, footerY + 14);
 
-                // Guardar PDF
-                const filename =
-                    `declaracion_renta_${year}_${now.toISOString().slice(0,10)}_${now.getTime().toString().slice(-6)}.pdf`;
-                pdf.save(filename);
-                showNotification('✓ PDF Profesional generado correctamente con 6 secciones', 'success');
+                pdf.save(
+                    `reporte_financiero_${year}_${now.toISOString().slice(0,10)}_${now.getTime().toString().slice(-6)}.pdf`);
+                showNotification('✓ PDF generado correctamente', 'success');
 
             } catch (error) {
                 console.error('Error generando PDF:', error);
@@ -2392,10 +2868,10 @@
         }
 
         // ================================================================
-        // ===== EXPORTAR EXCEL PROFESIONAL - 6 HOJAS =====
+        // ===== EXPORTAR EXCEL PROFESIONAL =====
         // ================================================================
         function exportarExcelReporte() {
-            showNotification('Generando Excel profesional con 6 hojas...', 'info');
+            showNotification('Generando Excel profesional...', 'info');
 
             setTimeout(() => {
                 try {
@@ -2407,138 +2883,135 @@
                     const now = new Date();
                     const year = document.getElementById('filtroAnio').value || now.getFullYear();
 
-                    // ================================================================
-                    // HOJA 1: DASHBOARD EJECUTIVO
-                    // ================================================================
+                    // HOJA 1: DASHBOARD
                     const dashboardData = [
-                        ['AGROVET - DECLARACIÓN DE RENTA'],
+                        ['AGROVET - REPORTE FINANCIERO'],
                         ['DASHBOARD EJECUTIVO'],
                         [''],
                         ['Período:', `${formatDate(start)} al ${formatDate(end)}`],
                         ['Generado:', now.toLocaleString('es-CO')],
                         ['Año fiscal:', year],
                         [''],
-                        ['=== INDICADORES CLAVE DE RENDIMIENTO (KPI) ==='],
+                        ['=== INDICADORES CLAVE ==='],
                         [''],
-                        ['INDICADOR', 'VALOR', 'ESTADO', 'META'],
-                        ['Ingresos brutos', resumen.ingresos_brutos || 0, '✓', ''],
-                        ['Costo de ventas', resumen.costo_ventas || 0, '✓', ''],
-                        ['Utilidad bruta', resumen.utilidad_bruta || 0, '✓', ''],
+                        ['INDICADOR', 'VALOR', '¿QUÉ SIGNIFICA?'],
+                        ['Ingresos brutos', resumen.ingresos_brutos || 0,
+                            'Todo el dinero que entró por ventas.'],
+                        ['Costo de ventas', resumen.costo_ventas || 0,
+                            'Lo que costaron los productos vendidos.'],
+                        ['Utilidad bruta', resumen.utilidad_bruta || 0,
+                            'Ganancia antes de gastos.'],
                         ['Margen bruto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_bruta / resumen.ingresos_brutos) *
-                            100).toFixed(2) : 0, '✓', '>20%'
-                        ],
-                        ['Utilidad neta', resumen.utilidad_neta || 0, '✓', ''],
+                            100).toFixed(2) : 0, 'Saludable: 25%-40% | Crítico: <20%'],
+                        ['Utilidad neta', resumen.utilidad_neta || 0,
+                            'Ganancia real después de TODOS los gastos.'],
                         ['Margen neto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen.ingresos_brutos) *
-                            100).toFixed(2) : 0, '✓', '>10%'
-                        ],
-                        ['Flujo de caja', resumen.flujo_caja || 0, '✓', 'Positivo'],
-                        ['IVA soportado', resumen.total_iva_soportado || 0, '✓', ''],
-                        ['', '', '', ''],
+                            100).toFixed(2) : 0, 'Saludable: 5%-15% | Crítico: <3%'],
+                        ['Flujo de caja', resumen.flujo_caja || 0,
+                            'Efectivo disponible en caja.'],
+                        ['', '', ''],
                         ['=== MÉTRICAS DE EFICIENCIA ==='],
-                        ['', '', '', ''],
-                        ['Métrica', 'Valor', 'Referencia', 'Cumple'],
+                        ['', ''],
+                        ['Métrica', 'Valor', 'Referencia', 'Diagnóstico'],
                         ['Rotación de gastos (%)', resumen.ingresos_brutos ? ((resumen.gastos_totales / resumen.ingresos_brutos) *
                             100).toFixed(2) : 0, '<60%', resumen.ingresos_brutos ? ((resumen.gastos_totales / resumen
-                                .ingresos_brutos) * 100) < 60 ? '✓' : '⚠' : 'N/A'
-                        ],
+                                .ingresos_brutos) * 100) < 60 ? '✅ Óptimo' : '⚠️ Revisar' : 'N/A'],
                         ['Cartera / Ingresos (%)', resumen.ingresos_brutos ? ((resumen.saldo_pendiente / resumen.ingresos_brutos) *
                             100).toFixed(2) : 0, '<30%', resumen.ingresos_brutos ? ((resumen.saldo_pendiente / resumen
-                                .ingresos_brutos) * 100) < 30 ? '✓' : '⚠' : 'N/A'
-                        ],
+                                .ingresos_brutos) * 100) < 30 ? '✅ Saludable' : '⚠️ Alta cartera' : 'N/A'],
                         ['Eficiencia operativa (%)', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen.ingresos_brutos) *
                             100).toFixed(2) : 0, '>15%', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen
-                                .ingresos_brutos) * 100) > 15 ? '✓' : '⚠' : 'N/A'
-                        ]
+                                .ingresos_brutos) * 100) > 15 ? '✅ Excelente' : '⚠️ Mejorable' : 'N/A'],
+                        ['Liquidez (%)', resumen.cobros_reales ? (((resumen.cobros_reales) / ((resumen.egresos_caja || 0) + (
+                            resumen.gastos_totales || 0))) * 100).toFixed(2) : 0, '>120%', resumen.cobros_reales ? ((
+                            (resumen.cobros_reales) / ((resumen.egresos_caja || 0) + (resumen.gastos_totales || 0))) *
+                            100) > 120 ? '✅ Buena' : '⚠️ Precaución' : 'N/A']
                     ];
 
                     const wsDashboard = XLSX.utils.aoa_to_sheet(dashboardData);
-                    wsDashboard['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 12 }, { wch: 20 }];
+                    wsDashboard['!cols'] = [{ wch: 30 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
                     wsDashboard['A1'].s = { font: { bold: true, size: 14 }, fill: { fgColor: { rgb: '1F8A86' } },
                         alignment: { horizontal: 'center' } };
                     XLSX.utils.book_append_sheet(wb, wsDashboard, 'Dashboard');
 
-                    // ================================================================
                     // HOJA 2: ESTADO DE RESULTADOS
-                    // ================================================================
                     const resultadosData = [
                         ['AGROVET - ESTADO DE RESULTADOS'],
                         [`Período: ${formatDate(start)} al ${formatDate(end)}`],
                         [''],
                         ['INGRESOS', ''],
-                        ['Concepto', 'Valor'],
-                        ['Ingresos brutos', resumen.ingresos_brutos || 0],
-                        ['(-) Devoluciones y descuentos', 0],
-                        ['(=) Ingresos netos', resumen.ingresos_brutos || 0],
+                        ['Concepto', 'Valor', 'Explicación'],
+                        ['Ingresos brutos', resumen.ingresos_brutos || 0, 'Total de ventas del período'],
+                        ['(-) Devoluciones y descuentos', 0, 'Ajustes por devoluciones'],
+                        ['(=) Ingresos netos', resumen.ingresos_brutos || 0, 'Ingresos después de ajustes'],
                         [''],
                         ['COSTOS DE VENTAS', ''],
-                        ['Costo de productos vendidos', resumen.costo_ventas || 0],
-                        ['(-) Costo de ventas', resumen.costo_ventas || 0],
+                        ['Costo de productos vendidos', resumen.costo_ventas || 0, 'Lo que costaron los productos'],
+                        ['(-) Costo de ventas', resumen.costo_ventas || 0, ''],
                         ['', ''],
-                        ['(=) UTILIDAD BRUTA', resumen.utilidad_bruta || 0],
+                        ['(=) UTILIDAD BRUTA', resumen.utilidad_bruta || 0, 'Ganancia antes de gastos'],
                         ['Margen bruto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_bruta / resumen.ingresos_brutos) *
-                            100).toFixed(2) + '%' : '0%'
-                        ],
-                        [''],
+                            100).toFixed(2) + '%' : '0%', 'Saludable: 25%-40%'],
+                        ['', ''],
                         ['GASTOS OPERATIVOS', ''],
-                        ['Gastos de compras', resumen.gastos_totales || 0],
-                        ['Gastos administrativos', 0],
-                        ['Gastos de ventas', 0],
-                        ['Total gastos operativos', resumen.gastos_totales || 0],
-                        [''],
-                        ['(=) UTILIDAD OPERATIVA', resumen.utilidad_neta || 0],
+                        ['Gastos de compras', resumen.gastos_totales || 0, 'Compras a proveedores'],
+                        ['Gastos administrativos', 0, 'Gastos de administración'],
+                        ['Gastos de ventas', 0, 'Gastos de ventas'],
+                        ['Total gastos operativos', resumen.gastos_totales || 0, 'Suma de todos los gastos'],
+                        ['', ''],
+                        ['(=) UTILIDAD OPERATIVA', resumen.utilidad_neta || 0, 'Ganancia después de gastos'],
                         ['', ''],
                         ['OTROS INGRESOS Y GASTOS', ''],
-                        ['Ingresos financieros', 0],
-                        ['Gastos financieros', 0],
+                        ['Ingresos financieros', 0, 'Intereses ganados'],
+                        ['Gastos financieros', 0, 'Intereses pagados'],
                         ['', ''],
-                        ['(=) UTILIDAD NETA', resumen.utilidad_neta || 0],
+                        ['(=) UTILIDAD NETA', resumen.utilidad_neta || 0, 'Ganancia final del período'],
                         ['Margen neto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen.ingresos_brutos) *
-                            100).toFixed(2) + '%' : '0%'
-                        ]
+                            100).toFixed(2) + '%' : '0%', 'Saludable: 5%-15%']
                     ];
 
                     const wsResultados = XLSX.utils.aoa_to_sheet(resultadosData);
-                    wsResultados['!cols'] = [{ wch: 35 }, { wch: 25 }];
+                    wsResultados['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 30 }];
                     XLSX.utils.book_append_sheet(wb, wsResultados, 'Estado Resultados');
 
-                    // ================================================================
                     // HOJA 3: FLUJO DE CAJA
-                    // ================================================================
                     const flujoData = [
                         ['AGROVET - FLUJO DE CAJA'],
                         [`Período: ${formatDate(start)} al ${formatDate(end)}`],
                         [''],
                         ['INGRESOS DE CAJA', ''],
-                        ['Concepto', 'Valor'],
-                        ['Ventas de contado', resumen.ventas_contado || 0],
-                        ['Cobros de créditos', resumen.cobros_reales - resumen.ventas_contado || 0],
-                        ['Abonos y anticipos', 0],
-                        ['Total ingresos de caja', resumen.cobros_reales || 0],
+                        ['Concepto', 'Valor', 'Explicación'],
+                        ['Ventas de contado', resumen.ventas_contado || 0, 'Ventas pagadas de inmediato'],
+                        ['Cobros de créditos', resumen.cobros_reales - resumen.ventas_contado || 0,
+                            'Abonos de clientes a crédito'],
+                        ['Abonos y anticipos', 0, 'Anticipos recibidos'],
+                        ['Total ingresos de caja', resumen.cobros_reales || 0, 'Todo el dinero que entró'],
                         ['', ''],
                         ['EGRESOS DE CAJA', ''],
-                        ['Pagos a proveedores', resumen.egresos_caja || 0],
-                        ['Gastos operativos', resumen.gastos_totales || 0],
-                        ['Total egresos de caja', (resumen.egresos_caja || 0) + (resumen.gastos_totales || 0)],
+                        ['Pagos a proveedores', resumen.egresos_caja || 0, 'Compras pagadas'],
+                        ['Gastos operativos', resumen.gastos_totales || 0, 'Gastos del negocio'],
+                        ['Total egresos de caja', (resumen.egresos_caja || 0) + (resumen.gastos_totales || 0),
+                            'Todo el dinero que salió'],
                         ['', ''],
-                        ['FLUJO DE CAJA NETO', resumen.flujo_caja || 0],
+                        ['FLUJO DE CAJA NETO', resumen.flujo_caja || 0,
+                            'Ingresos - Egresos (dinero disponible)'],
                         ['', ''],
                         ['ANÁLISIS DE LIQUIDEZ', ''],
-                        ['Saldo inicial de caja', 0],
-                        ['(+) Flujo de caja neto', resumen.flujo_caja || 0],
-                        ['(=) Saldo final de caja', resumen.flujo_caja || 0],
+                        ['Saldo inicial de caja', 0, 'Efectivo al inicio del período'],
+                        ['(+) Flujo de caja neto', resumen.flujo_caja || 0, 'Movimiento del período'],
+                        ['(=) Saldo final de caja', resumen.flujo_caja || 0, 'Efectivo al final del período'],
                         ['', ''],
                         ['Ratio de liquidez', resumen.cobros_reales ? ((resumen.cobros_reales) / ((resumen.egresos_caja || 0) + (
-                            resumen.gastos_totales || 0))).toFixed(2) : 'N/A'
+                            resumen.gastos_totales || 0))).toFixed(2) : 'N/A',
+                            '>1.2 = Buena liquidez | <0.8 = Crítica'
                         ]
                     ];
 
                     const wsFlujo = XLSX.utils.aoa_to_sheet(flujoData);
-                    wsFlujo['!cols'] = [{ wch: 35 }, { wch: 25 }];
+                    wsFlujo['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 30 }];
                     XLSX.utils.book_append_sheet(wb, wsFlujo, 'Flujo Caja');
 
-                    // ================================================================
-                    // HOJA 4: PROVEEDORES DETALLADO
-                    // ================================================================
+                    // HOJA 4: PROVEEDORES
                     const proveedores = JSON.parse(sessionStorage.getItem('declaracion_proveedores') || '[]');
                     if (proveedores.length) {
                         const provData = proveedores.map(p => ({
@@ -2554,9 +3027,7 @@
                         XLSX.utils.book_append_sheet(wb, wsProv, 'Proveedores');
                     }
 
-                    // ================================================================
-                    // HOJA 5: TOP PROVEEDORES Y ANÁLISIS
-                    // ================================================================
+                    // HOJA 5: TOP PROVEEDORES
                     if (topProveedores.length) {
                         const totalCompras = resumen.total_periodo || 0;
                         const topData = topProveedores.slice(0, 10).map((p, i) => ({
@@ -2572,9 +3043,7 @@
                         XLSX.utils.book_append_sheet(wb, wsTop, 'Top Proveedores');
                     }
 
-                    // ================================================================
-                    // HOJA 6: TENDENCIA MENSUAL
-                    // ================================================================
+                    // HOJA 6: TENDENCIA
                     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre',
                         'Octubre', 'Noviembre', 'Diciembre'
                     ];
@@ -2594,13 +3063,9 @@
                     wsTrend['!cols'] = [{ wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 18 }];
                     XLSX.utils.book_append_sheet(wb, wsTrend, 'Tendencia Mensual');
 
-                    // ================================================================
-                    // GUARDAR ARCHIVO
-                    // ================================================================
                     XLSX.writeFile(wb,
-                        `declaracion_renta_${year}_${now.getTime()}.xlsx`
-                    );
-                    showNotification('✓ Excel profesional generado con 6 hojas', 'success');
+                        `reporte_financiero_${year}_${now.getTime()}.xlsx`);
+                    showNotification('✓ Excel generado correctamente', 'success');
 
                 } catch (error) {
                     console.error('Error generando Excel:', error);
@@ -2643,7 +3108,7 @@
             printWindow.document.write(`
                 <html>
                     <head>
-                        <title>Declaración de Renta - AgroVet</title>
+                        <title>Reporte financiero - AgroVet</title>
                         <style>
                             body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 30px; color: #2c3e50; }
                             .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1F8A86; padding-bottom: 15px; }
@@ -2666,7 +3131,7 @@
                     </head>
                     <body>
                         <div class="header">
-                            <h1>AGROVET - Declaración de Renta</h1>
+                            <h1>AGROVET - Reporte financiero</h1>
                             <p>Sistema POS - Yacuanquer | Período: ${document.getElementById('filtroAnio').value || '2024'}</p>
                             <p>Fecha: ${fecha}</p>
                         </div>
@@ -2705,7 +3170,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             cargarEstadoSidebar();
 
-            // Filtros
             document.getElementById('filtroAnio').addEventListener('change', () => {
                 const year = Number(document.getElementById('filtroAnio').value || new Date().getFullYear());
                 if (!document.getElementById('filtroMes').value) {
@@ -2721,8 +3185,8 @@
                 if (month) {
                     const startDate = new Date(year, month - 1, 1);
                     const endDate = new Date(year, month, 0);
-                    document.getElementById('fechaInicio').value = startDate.toISOString().slice(0, 10);
-                    document.getElementById('fechaFin').value = endDate.toISOString().slice(0, 10);
+                    document.getElementById('fechaInicio').value = toLocalDateInput(startDate);
+                    document.getElementById('fechaFin').value = toLocalDateInput(endDate);
                 } else {
                     document.getElementById('fechaInicio').value = `${year}-01-01`;
                     document.getElementById('fechaFin').value = `${year}-12-31`;
@@ -2736,7 +3200,6 @@
                 });
             });
 
-            // Botones
             document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltros);
             document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarFiltros);
             document.getElementById('btnPdfReporte').addEventListener('click', exportarPdfReporte);
@@ -2744,28 +3207,25 @@
             document.getElementById('btnRecargarDatos').addEventListener('click', cargarDatosCompletos);
             document.getElementById('btnImprimirTabla').addEventListener('click', imprimirTabla);
 
-            // Modal
             document.getElementById('cerrarDetalle').addEventListener('click', cerrarDetalleProveedor);
             document.getElementById('detalleModal').addEventListener('click', (e) => {
                 if (e.target.id === 'detalleModal') cerrarDetalleProveedor();
             });
 
-            // Inicializar
             setDefaultFilters();
             cargarProveedoresFiltro().then(() => cargarDatosCompletos());
 
-            // Teclado
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'F5') { e.preventDefault();
                     cargarDatosCompletos(); }
-                if (e.key === 'Escape') { cerrarDetalleProveedor(); }
+                if (e.key === 'Escape') { cerrarDetalleProveedor();
+                    cerrarAyuda(); }
                 if (e.ctrlKey && e.key === 'p') { e.preventDefault();
                     imprimirTabla(); }
                 if (e.ctrlKey && e.key === 'e') { e.preventDefault();
                     exportarExcelReporte(); }
             });
 
-            // Redimensionar gráficos
             let resizeTimeout;
             window.addEventListener('resize', function() {
                 clearTimeout(resizeTimeout);

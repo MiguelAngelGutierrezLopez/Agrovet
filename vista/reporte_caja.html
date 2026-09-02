@@ -1172,17 +1172,23 @@
         
         @media (max-width: 992px) {
             .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar:not(.collapsed) {
+                width: 250px;
                 transform: translateX(0);
             }
+            .sidebar.collapsed {
+                width: 0;
+                transform: translateX(-100%);
+            }
             .main-content {
+                margin-left: 250px !important;
+                width: calc(100% - 250px) !important;
+            }
+            .main-content.expanded {
                 margin-left: 0 !important;
                 width: 100% !important;
             }
             .toggle-sidebar-collapsed {
-                display: flex;
+                display: none;
             }
         }
         
@@ -1277,7 +1283,7 @@
             </a>
             <a href="/declaracion_renta" class="nav-item">
                 <i class="nav-icon fas fa-file-invoice-dollar"></i>
-                <span class="nav-text">Declaración de Renta</span>
+                <span class="nav-text">Reporte financiero</span>
             </a>
         </nav>
     </div>

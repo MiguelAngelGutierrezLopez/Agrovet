@@ -30,8 +30,8 @@
             --sombra-hover: 0 8px 24px rgba(0,0,0,0.12);
             --border-radius: 16px;
             --border-radius-sm: 10px;
-            --sidebar-width: 260px;
-            --sidebar-collapsed-width: 70px;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 0px;
         }
         
         * {
@@ -61,7 +61,7 @@
         }
         
         .sidebar.collapsed {
-            width: var(--sidebar-collapsed-width);
+            width: 0;
         }
         
         .sidebar-header {
@@ -164,7 +164,7 @@
         }
         
         .main-content.expanded {
-            margin-left: var(--sidebar-collapsed-width);
+            margin-left: 0;
         }
         
         /* ===== HEADER ===== */

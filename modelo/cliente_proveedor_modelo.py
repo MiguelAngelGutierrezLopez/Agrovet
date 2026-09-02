@@ -48,7 +48,7 @@ class ClienteProveedorModel:
                     proveedor_telefono VARCHAR(15) NOT NULL,
                     producto_id INT NOT NULL,
                     fecha_compra DATE NOT NULL,
-                    cantidad DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                    cantidad INT NOT NULL DEFAULT 0,
                     precio_costo_unitario DECIMAL(12,2) NOT NULL DEFAULT 0.00,
                     precio_venta_unitario DECIMAL(12,2) DEFAULT 0.00,
                     total_compra DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -1774,7 +1774,15 @@ class ClienteProveedorModel:
             if not telefono_proveedor or not producto_id:
                 return False, 'Faltan datos del proveedor o del producto'
 
-            cantidad = float(cantidad or 0)
+            try:
+                cantidad_num = float(cantidad or 0)
+            except (TypeError, ValueError):
+                return False, 'La cantidad debe ser un número entero válido'
+
+            if not cantidad_num.is_integer():
+                return False, 'La cantidad debe ser un entero, sin decimales'
+
+            cantidad = int(cantidad_num)
             if cantidad <= 0:
                 return False, 'La cantidad debe ser mayor a cero'
 
@@ -1836,6 +1844,43 @@ class ClienteProveedorModel:
             if 'cursor' in locals() and cursor:
                 cursor.close()
             if 'conn' in locals() and conn:
+                conn.close()
+
+    @staticmethod
+    def eliminar_compra_proveedor(compra_id, telefono_proveedor=None):
+        """Eliminar una compra registrada a un proveedor. Permite validación por teléfono para seguridad."""
+        conn = None
+        cursor = None
+        try:
+            if compra_id is None:
+                return False, 'Falta el identificador de la compra'
+
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            query = "SELECT proveedor_telefono FROM compras_proveedor WHERE id = %s"
+            params = (compra_id,)
+            cursor.execute(query, params)
+            compra = cursor.fetchone()
+
+            if not compra:
+                return False, 'La compra no existe'
+
+            if telefono_proveedor and compra.get('proveedor_telefono') != telefono_proveedor:
+                return False, 'La compra no pertenece a este proveedor'
+
+            cursor.execute("DELETE FROM compras_proveedor WHERE id = %s", (compra_id,))
+            conn.commit()
+            return True, 'Compra eliminada correctamente'
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            logger.error(f"Error eliminando compra {compra_id}: {str(e)}")
+            return False, f"Error al eliminar la compra: {str(e)}"
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
                 conn.close()
 
     @staticmethod
@@ -1964,8 +2009,6 @@ class ClienteProveedorModel:
             utilidad_bruta = ingreso_bruto - costo_ventas_total
             utilidad_neta = utilidad_bruta - gastos_totales
             empresa_egresos = gastos_totales + egresos_caja
-            total_iva_soportado = round(gastos_totales * 0.19, 2)
-
             mes_actual = date.today().replace(day=1)
             total_mes_actual = sum(float(item.get('total') or 0) for item in por_mes if int(item.get('mes') or 0) == mes_actual.month)
 
@@ -1994,7 +2037,6 @@ class ClienteProveedorModel:
                     'utilidad_bruta': utilidad_bruta,
                     'utilidad_neta': utilidad_neta,
                     'total_mes_actual': total_mes_actual,
-                    'total_iva_soportado': total_iva_soportado,
                     'ingresos_caja': ingresos_caja,
                     'flujo_caja': ingresos_caja - empresa_egresos,
                     'empresa_egresos': empresa_egresos,
@@ -2128,8 +2170,7 @@ class ClienteProveedorModel:
                 'total_compras': sum(float(item.get('total_compra') or 0) for item in compras),
                 'cantidad_total': sum(float(item.get('cantidad') or 0) for item in compras),
                 'registros': len(compras),
-                'ultima_compra': max((item.get('fecha_compra') for item in compras if item.get('fecha_compra')), default=None),
-                'iva_soportado': round(sum(float(item.get('total_compra') or 0) for item in compras) * 0.19, 2)
+                'ultima_compra': max((item.get('fecha_compra') for item in compras if item.get('fecha_compra')), default=None)
             }
 
             return serializar_datos({

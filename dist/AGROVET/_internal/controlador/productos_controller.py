@@ -24,7 +24,7 @@ def obtener_proveedores():
         proveedores_formateados = [
             {
                 'telefono': p['telefono'],
-                'nombre': f"{p['nombre_empresa']} - {p['nombre_proveedor']}"
+                'nombre': f"{p['nombre_proveedor']} de {p['nombre_empresa']}"
             }
             for p in proveedores
         ]

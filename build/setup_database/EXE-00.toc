@@ -105,17 +105,17 @@
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
    '21\\agrovet\\Lib\\site-packages\\libmysql.dll',
    'BINARY'),
-  ('VCRUNTIME140_1.dll',
-   'C:\\Program Files\\Python311\\VCRUNTIME140_1.dll',
+  ('libssl-3-x64.dll',
+   'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
+   '21\\agrovet\\Lib\\site-packages\\libssl-3-x64.dll',
    'BINARY'),
-  ('MSVCP140.dll', 'C:\\WINDOWS\\system32\\MSVCP140.dll', 'BINARY'),
   ('libcrypto-3-x64.dll',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
    '21\\agrovet\\Lib\\site-packages\\libcrypto-3-x64.dll',
    'BINARY'),
-  ('libssl-3-x64.dll',
-   'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
-   '21\\agrovet\\Lib\\site-packages\\libssl-3-x64.dll',
+  ('MSVCP140.dll', 'C:\\WINDOWS\\system32\\MSVCP140.dll', 'BINARY'),
+  ('VCRUNTIME140_1.dll',
+   'C:\\Program Files\\Python311\\VCRUNTIME140_1.dll',
    'BINARY'),
   ('AgroVet.sql',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - 21\\AgroVet.sql',
@@ -127,7 +127,7 @@
  [],
  False,
  False,
- 1787107652,
+ 1788281011,
  [('run.exe',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
    '21\\agrovet\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',

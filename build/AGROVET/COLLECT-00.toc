@@ -411,6 +411,10 @@
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
    '21\\agrovet\\Lib\\site-packages\\markupsafe\\_speedups.cp311-win_amd64.pyd',
    'EXTENSION'),
+  ('modelo\\__pycache__\\_init_.cpython-311.pyc',
+   'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
+   '21\\modelo\\__pycache__\\_init_.cpython-311.pyc',
+   'DATA'),
   ('modelo\\__pycache__\\cliente_model.cpython-311.pyc',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
    '21\\modelo\\__pycache__\\cliente_model.cpython-311.pyc',
@@ -3297,6 +3301,10 @@
   ('vista\\Auxiliar_cliente.html',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
    '21\\vista\\Auxiliar_cliente.html',
+   'DATA'),
+  ('vista\\declaracion_renta.html',
+   'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
+   '21\\vista\\declaracion_renta.html',
    'DATA'),
   ('vista\\detalle_venta.html',
    'C:\\Users\\magea\\OneDrive\\Documentos\\agrovet - '
