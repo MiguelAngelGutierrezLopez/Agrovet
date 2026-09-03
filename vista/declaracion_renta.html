@@ -1738,7 +1738,7 @@
                     <thead>
                         <tr>
                             <th>Proveedor</th>
-                            <th>Documento</th>
+                            <th>Número de contacto</th>
                             <th>Estado</th>
                             <th>Total compras</th>
                             <th>Cantidad total</th>
@@ -2475,7 +2475,6 @@
                     }
                 });
             }
-
         }
 
         // ===== ABRIR DETALLE PROVEEDOR =====
@@ -2521,8 +2520,19 @@
                         </div>
                     </div>
                     ${compras.length ? `
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:16px 0 8px;">
+                            <label for="detalleFiltroProducto" style="font-size:12px; color:var(--gris-medio);">Producto</label>
+                            <select id="detalleFiltroProducto" class="form-control" style="max-width:220px;">
+                                <option value="">Todos los productos</option>
+                                ${[...new Set(compras.map(item => item.producto || 'Sin producto'))].sort().map(producto => `<option value="${producto.replace(/"/g, '&quot;')}">${producto}</option>`).join('')}
+                            </select>
+                            <label for="detalleFiltroDesde" style="font-size:12px; color:var(--gris-medio);">Desde</label>
+                            <input type="date" id="detalleFiltroDesde" class="form-control" style="max-width:155px;" value="${start || ''}">
+                            <label for="detalleFiltroHasta" style="font-size:12px; color:var(--gris-medio);">Hasta</label>
+                            <input type="date" id="detalleFiltroHasta" class="form-control" style="max-width:155px;" value="${end || ''}">
+                        </div>
                         <div style="margin: 16px 0 8px; font-weight: 600; color: var(--gris-oscuro);">
-                            <i class="fas fa-list"></i> Detalle de compras (${compras.length})
+                            <i class="fas fa-list"></i> Detalle de compras (<span id="detalleComprasContador">${compras.length}</span>)
                         </div>
                         <table class="mini-table">
                             <thead>
@@ -2536,7 +2546,7 @@
                             </thead>
                             <tbody>
                                 ${compras.map(item => `
-                                    <tr>
+                                    <tr data-fecha="${item.fecha_compra || ''}" data-producto="${(item.producto || 'Sin producto').replace(/"/g, '&quot;')}">
                                         <td>${formatDate(item.fecha_compra)}</td>
                                         <td>${item.producto || 'Sin producto'}</td>
                                         <td>${Number(item.cantidad || 0).toLocaleString('es-CO')}</td>
@@ -2548,6 +2558,26 @@
                         </table>
                     ` : '<div class="muted text-center py-4">Sin compras registradas</div>'}
                 `;
+                const actualizarDetalle = () => {
+                    const producto = document.getElementById('detalleFiltroProducto')?.value || '';
+                    const desde = document.getElementById('detalleFiltroDesde')?.value || '';
+                    const hasta = document.getElementById('detalleFiltroHasta')?.value || '';
+                    const filas = Array.from(cuerpo.querySelectorAll('tbody tr[data-fecha]'));
+                    let visibles = 0;
+                    filas.forEach(fila => {
+                        const coincideProducto = !producto || fila.dataset.producto === producto;
+                        const coincideDesde = !desde || fila.dataset.fecha >= desde;
+                        const coincideHasta = !hasta || fila.dataset.fecha <= hasta;
+                        const visible = coincideProducto && coincideDesde && coincideHasta;
+                        fila.style.display = visible ? '' : 'none';
+                        if (visible) visibles += 1;
+                    });
+                    const contador = document.getElementById('detalleComprasContador');
+                    if (contador) contador.textContent = visibles;
+                };
+                ['detalleFiltroProducto', 'detalleFiltroDesde', 'detalleFiltroHasta'].forEach(id => {
+                    document.getElementById(id)?.addEventListener('change', actualizarDetalle);
+                });
             } catch (error) {
                 console.error('Error cargando detalle:', error);
                 titulo.textContent = 'Error al cargar detalle';
@@ -2562,304 +2592,417 @@
         }
 
         // ================================================================
-        // ===== EXPORTAR PDF PROFESIONAL =====
+        // ===== EXPORTAR PDF PROFESIONAL - CORREGIDO =====
         // ================================================================
         function exportarPdfReporte() {
-            showNotification('Generando PDF profesional...', 'info');
+            showNotification('Generando PDF...', 'info');
 
             try {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-                const a4Width = pdf.internal.pageSize.getWidth();
-                const a4Height = pdf.internal.pageSize.getHeight();
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const margin = 14;
                 const now = new Date();
                 const { start, end } = getRangeFromFilters();
                 const year = document.getElementById('filtroAnio').value || now.getFullYear();
                 const resumen = cachedData.resumen || {};
                 const topProveedores = cachedData.top_proveedores || [];
 
-                // PORTADA
+                let yPos = 20;
+
+                // =============================================================
+                // FUNCIONES DE LIMPIEZA
+                // =============================================================
+                function cleanText(text) {
+                    if (!text) return '';
+                    return String(text)
+                        .replace(/[^\x20-\x7E\u00C0-\u00FF\u0100-\u017F]/g, '')
+                        .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+                        .trim();
+                }
+
+                function cleanCurrency(value) {
+                    const n = Number(value || 0);
+                    return '$ ' + n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                }
+
+                // =============================================================
+                // HEADER
+                // =============================================================
                 pdf.setFillColor(31, 138, 134);
-                pdf.rect(0, 0, a4Width, 85, 'F');
+                pdf.rect(0, 0, pageWidth, 25, 'F');
+
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(28);
-                pdf.text('AGROVET', 40, 42);
                 pdf.setFontSize(16);
-                pdf.text('Reporte Financiero', 40, 62);
-                pdf.setFontSize(11);
-                pdf.text('Resumen ejecutivo de compras, costos y rentabilidad', 40, 78);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('AGROVET', margin, 17);
 
-                pdf.setTextColor(200, 138, 103);
                 pdf.setFontSize(9);
-                pdf.text(`Período: ${formatDate(start)} al ${formatDate(end)}`, a4Width - 190, 42);
-                pdf.text(`Año fiscal: ${year}`, a4Width - 190, 56);
-                pdf.text(`Generado: ${now.toLocaleString('es-CO')}`, a4Width - 190, 70);
+                pdf.setFont('helvetica', 'normal');
+                pdf.text('Reporte Financiero', 50, 17);
 
-                let yPos = 120;
+                pdf.setFontSize(7);
+                pdf.setTextColor(200, 200, 200);
+                pdf.text('Sistema POS - Yacuanquer', 50, 22);
 
-                // ===== SECCIÓN 1: INDICADORES CLAVE =====
+                pdf.setTextColor(200, 200, 200);
+                pdf.setFontSize(7);
+                pdf.setFont('helvetica', 'normal');
+                const periodoTexto = cleanText(`Periodo: ${formatDate(start)} al ${formatDate(end)}`);
+                pdf.text(periodoTexto, pageWidth - margin - 45, 14);
+                pdf.text(`Año fiscal: ${year}`, pageWidth - margin - 45, 19);
+                pdf.text(`Generado: ${now.toLocaleDateString('es-CO')}`, pageWidth - margin - 45, 24);
+
+                yPos = 34;
+
+                // =============================================================
+                // SECCION 1: INDICADORES CLAVE
+                // =============================================================
                 pdf.setTextColor(44, 62, 80);
-                pdf.setFontSize(14);
-                pdf.text('1. INDICADORES CLAVE', 40, yPos);
-                yPos += 10;
+                pdf.setFontSize(11);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('1. INDICADORES CLAVE', margin, yPos);
+                yPos += 2;
                 pdf.setDrawColor(31, 138, 134);
-                pdf.line(40, yPos, a4Width - 40, yPos);
-                yPos += 14;
+                pdf.line(margin, yPos + 2, margin + 55, yPos + 2);
+                yPos += 8;
 
                 const kpiData = [
-                    ['💵 Ingresos brutos', document.getElementById('ingresoBruto').textContent,
-                        'Todo el dinero que entró por ventas.'],
-                    ['📦 Costo de ventas', document.getElementById('costoVentas').textContent,
-                        'Lo que costaron los productos vendidos.'],
-                    ['💰 Utilidad neta', document.getElementById('utilidadNeta').textContent,
-                        'Ganancia real después de todos los gastos.'],
-                    ['💳 Flujo de caja', document.getElementById('flujoCaja').textContent,
-                        'Efectivo disponible en caja.']
+                    ['Ingresos brutos', cleanCurrency(resumen.ingresos_brutos || 0), 'Total de ventas del periodo'],
+                    ['Costo de ventas', cleanCurrency(resumen.costo_ventas || 0), 'Costo de los productos vendidos'],
+                    ['Utilidad neta', cleanCurrency(resumen.utilidad_neta || 0), 'Ganancia real despues de todos los gastos'],
+                    ['Flujo de caja', cleanCurrency(resumen.flujo_caja || 0), 'Efectivo disponible en caja']
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Indicador', 'Valor', '¿Qué significa?']],
+                    head: [
+                        ['INDICADOR', 'VALOR', 'DESCRIPCION']
+                    ],
                     body: kpiData,
                     theme: 'grid',
-                    headStyles: { fillColor: [31, 138, 134], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 8 },
-                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
-                    margin: { left: 40, right: 40 }
+                    headStyles: {
+                        fillColor: [31, 138, 134],
+                        textColor: 255,
+                        fontSize: 7,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: {
+                        fontSize: 7,
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 35 },
+                        1: { cellWidth: 30, halign: 'right' },
+                        2: { cellWidth: 60 }
+                    },
+                    margin: { left: margin, right: margin },
+                    tableWidth: pageWidth - (margin * 2)
                 });
-                yPos = pdf.lastAutoTable.finalY + 16;
+                yPos = pdf.lastAutoTable.finalY + 6;
 
-                // ===== SECCIÓN 2: INGRESOS Y COBROS =====
-                if (yPos > a4Height - 120) { pdf.addPage();
-                    yPos = 40; }
-                pdf.setFontSize(13);
+                // =============================================================
+                // SECCION 2: INGRESOS Y COBROS
+                // =============================================================
+                if (yPos > pageHeight - 50) {
+                    pdf.addPage();
+                    yPos = 20;
+                }
+
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('2. INGRESOS Y COBROS', 40, yPos);
-                yPos += 10;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('2. INGRESOS Y COBROS', margin, yPos);
+                yPos += 2;
                 pdf.setDrawColor(39, 174, 96);
-                pdf.line(40, yPos, 200, yPos);
-                yPos += 12;
+                pdf.line(margin, yPos + 2, margin + 50, yPos + 2);
+                yPos += 8;
 
                 const ingresosData = [
-                    ['💳 Ventas contado', document.getElementById('ventasContado').textContent,
-                        'Ventas pagadas de inmediato.'],
-                    ['📋 Ventas crédito', document.getElementById('ventasCredito').textContent,
-                        'Ventas que te deben pagar.'],
-                    ['💵 Cobros reales', document.getElementById('cobrosReales').textContent,
-                        'Dinero que realmente entró.'],
-                    ['⚠️ Saldo pendiente', document.getElementById('saldoPendiente').textContent,
-                        'Lo que los clientes aún deben.']
+                    ['Ventas contado', cleanCurrency(resumen.ventas_contado || 0), 'Ventas pagadas de inmediato'],
+                    ['Ventas credito', cleanCurrency(resumen.ventas_credito || 0), 'Ventas que deben pagar despues'],
+                    ['Cobros reales', cleanCurrency(resumen.cobros_reales || 0), 'Dinero que realmente entro'],
+                    ['Saldo pendiente', cleanCurrency(resumen.saldo_pendiente || 0), 'Lo que los clientes aun deben']
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Concepto', 'Valor', 'Detalle']],
+                    head: [
+                        ['CONCEPTO', 'VALOR', 'DETALLE']
+                    ],
                     body: ingresosData,
                     theme: 'grid',
-                    headStyles: { fillColor: [39, 174, 96], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 8 },
-                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
-                    margin: { left: 40, right: 40 }
+                    headStyles: {
+                        fillColor: [39, 174, 96],
+                        textColor: 255,
+                        fontSize: 7,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: {
+                        fontSize: 7,
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 35 },
+                        1: { cellWidth: 30, halign: 'right' },
+                        2: { cellWidth: 60 }
+                    },
+                    margin: { left: margin, right: margin },
+                    tableWidth: pageWidth - (margin * 2)
                 });
-                yPos = pdf.lastAutoTable.finalY + 16;
+                yPos = pdf.lastAutoTable.finalY + 6;
 
-                // ===== SECCIÓN 3: COSTOS Y GASTOS =====
-                if (yPos > a4Height - 120) { pdf.addPage();
-                    yPos = 40; }
-                pdf.setFontSize(13);
+                // =============================================================
+                // SECCION 3: COSTOS Y GASTOS
+                // =============================================================
+                if (yPos > pageHeight - 50) {
+                    pdf.addPage();
+                    yPos = 20;
+                }
+
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('3. COSTOS Y GASTOS', 40, yPos);
-                yPos += 10;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('3. COSTOS Y GASTOS', margin, yPos);
+                yPos += 2;
                 pdf.setDrawColor(196, 138, 103);
-                pdf.line(40, yPos, 230, yPos);
-                yPos += 12;
+                pdf.line(margin, yPos + 2, margin + 50, yPos + 2);
+                yPos += 8;
 
                 const gastosData = [
-                    ['📦 Gastos operativos', document.getElementById('gastosOperativos').textContent,
-                        'Compras a proveedores.'],
-                    ['🏦 Egresos caja', document.getElementById('egresosCaja').textContent,
-                        'Todo el dinero que salió.'],
-                    ['📊 Gastos del período', document.getElementById('gastosPeriodo').textContent,
-                        'Total de compras y egresos.'],
-                    ['🧾 Base de costo', document.getElementById('baseGasto').textContent,
-                        'Valor para deducciones fiscales.']
+                    ['Gastos operativos', cleanCurrency(resumen.gastos_totales || 0), 'Compras a proveedores'],
+                    ['Egresos caja', cleanCurrency(resumen.egresos_caja || 0), 'Todo el dinero que salio'],
+                    ['Gastos del periodo', cleanCurrency(resumen.gastos_totales || 0), 'Total de compras y egresos'],
+                    ['Base de costo', cleanCurrency(resumen.base_gasto || 0), 'Valor para deducciones fiscales']
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Concepto', 'Valor', 'Detalle']],
+                    head: [
+                        ['CONCEPTO', 'VALOR', 'DETALLE']
+                    ],
                     body: gastosData,
                     theme: 'grid',
-                    headStyles: { fillColor: [196, 138, 103], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 8 },
-                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
-                    margin: { left: 40, right: 40 }
+                    headStyles: {
+                        fillColor: [196, 138, 103],
+                        textColor: 255,
+                        fontSize: 7,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: {
+                        fontSize: 7,
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 35 },
+                        1: { cellWidth: 30, halign: 'right' },
+                        2: { cellWidth: 60 }
+                    },
+                    margin: { left: margin, right: margin },
+                    tableWidth: pageWidth - (margin * 2)
                 });
-                yPos = pdf.lastAutoTable.finalY + 16;
+                yPos = pdf.lastAutoTable.finalY + 6;
 
-                // ===== SECCIÓN 4: RENTABILIDAD =====
-                if (yPos > a4Height - 120) { pdf.addPage();
-                    yPos = 40; }
-                pdf.setFontSize(13);
+                // =============================================================
+                // SECCION 4: RENTABILIDAD
+                // =============================================================
+                if (yPos > pageHeight - 50) {
+                    pdf.addPage();
+                    yPos = 20;
+                }
+
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('4. RENTABILIDAD Y MARGEN', 40, yPos);
-                yPos += 10;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('4. RENTABILIDAD Y MARGEN', margin, yPos);
+                yPos += 2;
                 pdf.setDrawColor(217, 195, 87);
-                pdf.line(40, yPos, 230, yPos);
-                yPos += 12;
+                pdf.line(margin, yPos + 2, margin + 60, yPos + 2);
+                yPos += 8;
 
                 const rentabData = [
-                    ['📊 Utilidad bruta', document.getElementById('utilidadBruta').textContent,
-                        'Ganancia antes de gastos.'],
-                    ['📈 Margen bruto', document.getElementById('margenBruto').textContent,
-                        'Saludable: 25%-40% | Crítico: <20%'],
-                    ['📈 Margen neto', document.getElementById('margenNeto').textContent,
-                        'Saludable: 5%-15% | Crítico: <3%'],
-                    ['📊 Margen estimado', document.getElementById('margenEstimado').textContent,
-                        'Diferencia operativa estimada.']
+                    ['Utilidad bruta', cleanCurrency(resumen.utilidad_bruta || 0), 'Ganancia antes de gastos'],
+                    ['Margen bruto', document.getElementById('margenBruto').textContent || '0%',
+                        'Saludable: 25%-40% | Critico: <20%'
+                    ],
+                    ['Margen neto', document.getElementById('margenNeto').textContent || '0%',
+                        'Saludable: 5%-15% | Critico: <3%'
+                    ],
+                    ['Margen estimado', cleanCurrency(resumen.margen_estimado || 0), 'Diferencia operativa estimada']
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Concepto', 'Valor', 'Interpretación']],
+                    head: [
+                        ['CONCEPTO', 'VALOR', 'INTERPRETACION']
+                    ],
                     body: rentabData,
                     theme: 'grid',
-                    headStyles: { fillColor: [217, 195, 87], textColor: 44, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 8 },
-                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
-                    margin: { left: 40, right: 40 }
+                    headStyles: {
+                        fillColor: [217, 195, 87],
+                        textColor: 44,
+                        fontSize: 7,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: {
+                        fontSize: 7,
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 35 },
+                        1: { cellWidth: 30, halign: 'right' },
+                        2: { cellWidth: 60 }
+                    },
+                    margin: { left: margin, right: margin },
+                    tableWidth: pageWidth - (margin * 2)
                 });
-                yPos = pdf.lastAutoTable.finalY + 16;
+                yPos = pdf.lastAutoTable.finalY + 6;
 
-                // ===== SECCIÓN 5: TOP PROVEEDORES =====
-                if (yPos > a4Height - 120) { pdf.addPage();
-                    yPos = 40; }
-                pdf.setFontSize(13);
+                // =============================================================
+                // SECCION 5: TOP PROVEEDORES
+                // =============================================================
+                if (yPos > pageHeight - 50) {
+                    pdf.addPage();
+                    yPos = 20;
+                }
+
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('5. PRINCIPALES PROVEEDORES', 40, yPos);
-                yPos += 10;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('5. PRINCIPALES PROVEEDORES', margin, yPos);
+                yPos += 2;
                 pdf.setDrawColor(31, 138, 134);
-                pdf.line(40, yPos, 200, yPos);
-                yPos += 12;
+                pdf.line(margin, yPos + 2, margin + 60, yPos + 2);
+                yPos += 8;
 
                 const totalCompras = resumen.total_periodo || 0;
                 const topData = topProveedores.slice(0, 10).map((p, i) => [
-                    `${i + 1}. ${(p.nombre || 'Proveedor').substring(0, 30)}`,
-                    formatCurrency(p.total || 0),
+                    cleanText(`${i + 1}. ${(p.nombre || 'Proveedor').substring(0, 25)}`),
+                    cleanCurrency(p.total || 0),
                     totalCompras ? ((p.total / totalCompras) * 100).toFixed(1) + '%' : '0%'
                 ]);
 
                 if (topData.length > 0) {
                     pdf.autoTable({
                         startY: yPos,
-                        head: [['Proveedor', 'Total Compras', 'Participación']],
+                        head: [
+                            ['PROVEEDOR', 'TOTAL COMPRAS', 'PARTICIPACION']
+                        ],
                         body: topData,
                         theme: 'striped',
-                        headStyles: { fillColor: [31, 138, 134], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                        bodyStyles: { fontSize: 8 },
-                        columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 70,
-                                halign: 'right' } },
-                        margin: { left: 40, right: 40 }
+                        headStyles: {
+                            fillColor: [31, 138, 134],
+                            textColor: 255,
+                            fontSize: 7,
+                            fontStyle: 'bold',
+                            halign: 'center'
+                        },
+                        bodyStyles: {
+                            fontSize: 7,
+                            valign: 'middle'
+                        },
+                        columnStyles: {
+                            0: { cellWidth: 60 },
+                            1: { cellWidth: 35, halign: 'right' },
+                            2: { cellWidth: 25, halign: 'right' }
+                        },
+                        margin: { left: margin, right: margin },
+                        tableWidth: pageWidth - (margin * 2)
                     });
-                    yPos = pdf.lastAutoTable.finalY + 16;
+                    yPos = pdf.lastAutoTable.finalY + 6;
                 } else {
-                    pdf.setFontSize(9);
+                    pdf.setFontSize(8);
                     pdf.setTextColor(127, 140, 141);
-                    pdf.text('No hay información de proveedores disponible', 40, yPos + 10);
-                    yPos += 30;
+                    pdf.text('No hay informacion de proveedores disponible', margin, yPos + 8);
+                    yPos += 20;
                 }
 
-                // ===== SECCIÓN 6: ANÁLISIS COMPARATIVO =====
-                if (yPos > a4Height - 120) { pdf.addPage();
-                    yPos = 40; }
-                pdf.setFontSize(13);
+                // =============================================================
+                // SECCION 6: COMPARATIVA
+                // =============================================================
+                if (yPos > pageHeight - 50) {
+                    pdf.addPage();
+                    yPos = 20;
+                }
+
                 pdf.setTextColor(44, 62, 80);
-                pdf.text('6. ANÁLISIS COMPARATIVO', 40, yPos);
-                yPos += 10;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('6. ANALISIS COMPARATIVO', margin, yPos);
+                yPos += 2;
                 pdf.setDrawColor(52, 152, 219);
-                pdf.line(40, yPos, 210, yPos);
-                yPos += 12;
+                pdf.line(margin, yPos + 2, margin + 55, yPos + 2);
+                yPos += 8;
 
                 const comparativaData = [
-                    ['📅 Período actual', document.getElementById('periodoActual').textContent,
-                        document.getElementById('deltaPeriodoActual').textContent],
-                    ['📅 Período anterior', document.getElementById('periodoAnterior').textContent,
-                        document.getElementById('deltaPeriodoAnterior').textContent],
-                    ['🧾 Deducciones base', document.getElementById('deduccionesTotales').textContent,
-                        document.getElementById('deltaDeducciones').textContent],
-                    ['📊 Gastos del período', document.getElementById('gastosPeriodoComparativa').textContent,
-                        document.getElementById('deltaRetenciones').textContent]
-                ];
-
-                pdf.autoTable({
-                    startY: yPos,
-                    head: [['Indicador', 'Valor', 'Variación']],
-                    body: comparativaData,
-                    theme: 'grid',
-                    headStyles: { fillColor: [52, 152, 219], textColor: 255, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 8 },
-                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
-                    margin: { left: 40, right: 40 }
-                });
-                yPos = pdf.lastAutoTable.finalY + 16;
-
-                // ===== SECCIÓN 7: EFICIENCIA =====
-                if (yPos > a4Height - 120) { pdf.addPage();
-                    yPos = 40; }
-                pdf.setFontSize(13);
-                pdf.setTextColor(44, 62, 80);
-                pdf.text('7. INDICADORES DE EFICIENCIA', 40, yPos);
-                yPos += 10;
-                pdf.setDrawColor(217, 195, 87);
-                pdf.line(40, yPos, 260, yPos);
-                yPos += 12;
-
-                const ingresos = Number(resumen.ingresos_brutos || 0);
-                const gastos = Number(resumen.gastos_totales || 0);
-                const saldo = Number(resumen.saldo_pendiente || 0);
-                const utilidadNeta = Number(resumen.utilidad_neta || 0);
-                const gastoRatio = ingresos ? (gastos / ingresos) * 100 : 0;
-                const saldoRatio = ingresos ? (saldo / ingresos) * 100 : 0;
-                const eficienciaRatio = ingresos ? (utilidadNeta / ingresos) * 100 : 0;
-                const baseLiquidez = (Number(resumen.egresos_caja || 0) + gastos) || 1;
-                const liquidezRatio = Number(resumen.cobros_reales || 0) ? ((Number(resumen.cobros_reales || 0) / baseLiquidez) *
-                    100) : 0;
-
-                const eficienciaData = [
-                    ['🔄 Rotación de gastos', ingresos ? `${gastoRatio.toFixed(2)}%` : 'N/A', gastoRatio < 60 ?
-                        '✅ Óptimo (<60%)' : '⚠️ Revisar (>60%)'],
-                    ['📊 Cartera / Ingresos', ingresos ? `${saldoRatio.toFixed(2)}%` : 'N/A', saldoRatio < 30 ?
-                        '✅ Saludable (<30%)' : '⚠️ Alta cartera (>30%)'],
-                    ['⚡ Eficiencia operativa', ingresos ? `${eficienciaRatio.toFixed(2)}%` : 'N/A', eficienciaRatio > 15 ?
-                        '✅ Excelente (>15%)' : '⚠️ Mejorable (<15%)'],
-                    ['💧 Liquidez', Number(resumen.cobros_reales || 0) ? `${liquidezRatio.toFixed(2)}%` : 'N/A',
-                        liquidezRatio > 120 ? '✅ Buena (>120%)' : '⚠️ Precaución (<120%)'
+                    ['Periodo actual', cleanCurrency(Number(resumen.utilidad_neta || 0)),
+                        document.getElementById('deltaPeriodoActual').textContent || 'Sin variacion'
+                    ],
+                    ['Periodo anterior', cleanCurrency(Number(resumen.utilidad_neta || 0)),
+                        document.getElementById('deltaPeriodoAnterior').textContent || 'Sin comparacion'
+                    ],
+                    ['Deducciones base', cleanCurrency(resumen.base_gasto || 0),
+                        document.getElementById('deltaDeducciones').textContent || ''
+                    ],
+                    ['Gastos del periodo', cleanCurrency(resumen.gastos_totales || 0),
+                        document.getElementById('deltaRetenciones').textContent || ''
                     ]
                 ];
 
                 pdf.autoTable({
                     startY: yPos,
-                    head: [['Indicador', 'Valor', 'Diagnóstico']],
-                    body: eficienciaData,
+                    head: [
+                        ['INDICADOR', 'VALOR', 'VARIACION']
+                    ],
+                    body: comparativaData,
                     theme: 'grid',
-                    headStyles: { fillColor: [217, 195, 87], textColor: 44, fontSize: 9, fontStyle: 'bold' },
-                    bodyStyles: { fontSize: 8 },
-                    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 190 } },
-                    margin: { left: 40, right: 40 }
+                    headStyles: {
+                        fillColor: [52, 152, 219],
+                        textColor: 255,
+                        fontSize: 7,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: {
+                        fontSize: 7,
+                        valign: 'middle'
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 35 },
+                        1: { cellWidth: 30, halign: 'right' },
+                        2: { cellWidth: 60 }
+                    },
+                    margin: { left: margin, right: margin },
+                    tableWidth: pageWidth - (margin * 2)
                 });
-                yPos = pdf.lastAutoTable.finalY + 16;
+                yPos = pdf.lastAutoTable.finalY + 6;
 
+                // =============================================================
                 // FOOTER
-                const footerY = Math.max(yPos + 20, a4Height - 50);
-                pdf.setFontSize(8);
+                // =============================================================
+                const footerY = Math.max(yPos + 10, pageHeight - 15);
+                pdf.setFontSize(6);
                 pdf.setTextColor(127, 140, 141);
-                pdf.text('Reporte financiero - Resumen de compras, costos, rentabilidad y flujo de caja.', 40, footerY);
-                pdf.text(`AgroVet © ${year} | Sistema POS | Página ${pdf.getNumberOfPages()}`, 40, footerY + 14);
-                pdf.text(`Código: RF-${year}-${now.getTime().toString().slice(-6)}`, a4Width - 160, footerY + 14);
+                pdf.text('Reporte financiero - Resumen de compras, costos, rentabilidad y flujo de caja.', margin, footerY);
+                pdf.text(`AgroVet © ${year} | Sistema POS | Pagina ${pdf.getNumberOfPages()}`, margin, footerY + 5);
+                pdf.text(`Codigo: RF-${year}-${now.getTime().toString().slice(-6)}`, pageWidth - margin - 40, footerY + 5);
 
-                pdf.save(
-                    `reporte_financiero_${year}_${now.toISOString().slice(0,10)}_${now.getTime().toString().slice(-6)}.pdf`);
-                showNotification('✓ PDF generado correctamente', 'success');
+                // Guardar
+                const filename =
+                    `reporte_financiero_${year}_${now.toISOString().slice(0,10)}_${now.getTime().toString().slice(-6)}.pdf`;
+                pdf.save(filename);
+                showNotification('PDF generado correctamente', 'success');
 
             } catch (error) {
                 console.error('Error generando PDF:', error);
@@ -2896,36 +3039,47 @@
                         [''],
                         ['INDICADOR', 'VALOR', '¿QUÉ SIGNIFICA?'],
                         ['Ingresos brutos', resumen.ingresos_brutos || 0,
-                            'Todo el dinero que entró por ventas.'],
+                            'Todo el dinero que entró por ventas.'
+                        ],
                         ['Costo de ventas', resumen.costo_ventas || 0,
-                            'Lo que costaron los productos vendidos.'],
+                            'Lo que costaron los productos vendidos.'
+                        ],
                         ['Utilidad bruta', resumen.utilidad_bruta || 0,
-                            'Ganancia antes de gastos.'],
+                            'Ganancia antes de gastos.'
+                        ],
                         ['Margen bruto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_bruta / resumen.ingresos_brutos) *
-                            100).toFixed(2) : 0, 'Saludable: 25%-40% | Crítico: <20%'],
+                            100).toFixed(2) : 0, 'Saludable: 25%-40% | Crítico: <20%'
+                        ],
                         ['Utilidad neta', resumen.utilidad_neta || 0,
-                            'Ganancia real después de TODOS los gastos.'],
+                            'Ganancia real después de TODOS los gastos.'
+                        ],
                         ['Margen neto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen.ingresos_brutos) *
-                            100).toFixed(2) : 0, 'Saludable: 5%-15% | Crítico: <3%'],
+                            100).toFixed(2) : 0, 'Saludable: 5%-15% | Crítico: <3%'
+                        ],
                         ['Flujo de caja', resumen.flujo_caja || 0,
-                            'Efectivo disponible en caja.'],
+                            'Efectivo disponible en caja.'
+                        ],
                         ['', '', ''],
                         ['=== MÉTRICAS DE EFICIENCIA ==='],
                         ['', ''],
                         ['Métrica', 'Valor', 'Referencia', 'Diagnóstico'],
                         ['Rotación de gastos (%)', resumen.ingresos_brutos ? ((resumen.gastos_totales / resumen.ingresos_brutos) *
                             100).toFixed(2) : 0, '<60%', resumen.ingresos_brutos ? ((resumen.gastos_totales / resumen
-                                .ingresos_brutos) * 100) < 60 ? '✅ Óptimo' : '⚠️ Revisar' : 'N/A'],
+                                .ingresos_brutos) * 100) < 60 ? '✅ Óptimo' : '⚠️ Revisar' : 'N/A'
+                        ],
                         ['Cartera / Ingresos (%)', resumen.ingresos_brutos ? ((resumen.saldo_pendiente / resumen.ingresos_brutos) *
                             100).toFixed(2) : 0, '<30%', resumen.ingresos_brutos ? ((resumen.saldo_pendiente / resumen
-                                .ingresos_brutos) * 100) < 30 ? '✅ Saludable' : '⚠️ Alta cartera' : 'N/A'],
+                                .ingresos_brutos) * 100) < 30 ? '✅ Saludable' : '⚠️ Alta cartera' : 'N/A'
+                        ],
                         ['Eficiencia operativa (%)', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen.ingresos_brutos) *
                             100).toFixed(2) : 0, '>15%', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen
-                                .ingresos_brutos) * 100) > 15 ? '✅ Excelente' : '⚠️ Mejorable' : 'N/A'],
+                                .ingresos_brutos) * 100) > 15 ? '✅ Excelente' : '⚠️ Mejorable' : 'N/A'
+                        ],
                         ['Liquidez (%)', resumen.cobros_reales ? (((resumen.cobros_reales) / ((resumen.egresos_caja || 0) + (
-                            resumen.gastos_totales || 0))) * 100).toFixed(2) : 0, '>120%', resumen.cobros_reales ? ((
-                            (resumen.cobros_reales) / ((resumen.egresos_caja || 0) + (resumen.gastos_totales || 0))) *
-                            100) > 120 ? '✅ Buena' : '⚠️ Precaución' : 'N/A']
+                            resumen.gastos_totales || 0))) * 100).toFixed(2) : 0, '>120%', resumen.cobros_reales ? (((
+                            resumen.cobros_reales) / ((resumen.egresos_caja || 0) + (resumen.gastos_totales || 0))) *
+                            100) > 120 ? '✅ Buena' : '⚠️ Precaución' : 'N/A'
+                        ]
                     ];
 
                     const wsDashboard = XLSX.utils.aoa_to_sheet(dashboardData);
@@ -2951,7 +3105,8 @@
                         ['', ''],
                         ['(=) UTILIDAD BRUTA', resumen.utilidad_bruta || 0, 'Ganancia antes de gastos'],
                         ['Margen bruto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_bruta / resumen.ingresos_brutos) *
-                            100).toFixed(2) + '%' : '0%', 'Saludable: 25%-40%'],
+                            100).toFixed(2) + '%' : '0%', 'Saludable: 25%-40%'
+                        ],
                         ['', ''],
                         ['GASTOS OPERATIVOS', ''],
                         ['Gastos de compras', resumen.gastos_totales || 0, 'Compras a proveedores'],
@@ -2967,7 +3122,8 @@
                         ['', ''],
                         ['(=) UTILIDAD NETA', resumen.utilidad_neta || 0, 'Ganancia final del período'],
                         ['Margen neto (%)', resumen.ingresos_brutos ? ((resumen.utilidad_neta / resumen.ingresos_brutos) *
-                            100).toFixed(2) + '%' : '0%', 'Saludable: 5%-15%']
+                            100).toFixed(2) + '%' : '0%', 'Saludable: 5%-15%'
+                        ]
                     ];
 
                     const wsResultados = XLSX.utils.aoa_to_sheet(resultadosData);
@@ -2983,7 +3139,8 @@
                         ['Concepto', 'Valor', 'Explicación'],
                         ['Ventas de contado', resumen.ventas_contado || 0, 'Ventas pagadas de inmediato'],
                         ['Cobros de créditos', resumen.cobros_reales - resumen.ventas_contado || 0,
-                            'Abonos de clientes a crédito'],
+                            'Abonos de clientes a crédito'
+                        ],
                         ['Abonos y anticipos', 0, 'Anticipos recibidos'],
                         ['Total ingresos de caja', resumen.cobros_reales || 0, 'Todo el dinero que entró'],
                         ['', ''],
@@ -2991,10 +3148,12 @@
                         ['Pagos a proveedores', resumen.egresos_caja || 0, 'Compras pagadas'],
                         ['Gastos operativos', resumen.gastos_totales || 0, 'Gastos del negocio'],
                         ['Total egresos de caja', (resumen.egresos_caja || 0) + (resumen.gastos_totales || 0),
-                            'Todo el dinero que salió'],
+                            'Todo el dinero que salió'
+                        ],
                         ['', ''],
                         ['FLUJO DE CAJA NETO', resumen.flujo_caja || 0,
-                            'Ingresos - Egresos (dinero disponible)'],
+                            'Ingresos - Egresos (dinero disponible)'
+                        ],
                         ['', ''],
                         ['ANÁLISIS DE LIQUIDEZ', ''],
                         ['Saldo inicial de caja', 0, 'Efectivo al inicio del período'],
@@ -3142,7 +3301,7 @@
                             <div class="summary-item"><div class="label">Flujo caja</div><div class="value">${document.getElementById('flujoCaja').textContent}</div></div>
                         </div>
                         <table>
-                            <thead><tr><th>Proveedor</th><th>Documento</th><th>Estado</th><th>Total compras</th><th>Cantidad</th><th>Última compra</th></tr></thead>
+                            <thead><tr><th>Proveedor</th><th>Número de contacto</th><th>Estado</th><th>Total compras</th><th>Cantidad</th><th>Última compra</th></tr></thead>
                             <tbody>${rows}</tbody>
                         </table>
                         <div class="footer">Reporte generado automáticamente por AgroVet - Uso interno</div>

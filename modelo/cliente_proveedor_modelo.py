@@ -2229,6 +2229,69 @@ class ClienteProveedorModel:
                 cursor.close()
             if conn:
                 conn.close()
+
+    @staticmethod
+    def obtener_resumen_compras_producto(telefono, producto_id):
+        """Obtiene el resumen histórico de un producto sin filtro de fechas."""
+        conn = None
+        cursor = None
+        try:
+            conn = db.get_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute(
+                """
+                SELECT p.nombre AS producto,
+                       COUNT(cp.id) AS total_compras,
+                       COALESCE(SUM(cp.cantidad), 0) AS cantidad_total,
+                       COALESCE(SUM(cp.total_compra), 0) AS total_gastado,
+                       COALESCE(MIN(cp.fecha_compra), NULL) AS primera_compra,
+                       COALESCE(MAX(cp.fecha_compra), NULL) AS ultima_compra
+                FROM compras_proveedor cp
+                LEFT JOIN productos p ON p.id = cp.producto_id
+                WHERE cp.proveedor_telefono = %s AND cp.producto_id = %s
+                GROUP BY p.id, p.nombre
+                """,
+                (telefono, producto_id)
+            )
+            resumen = cursor.fetchone()
+            if not resumen:
+                return None
+            cursor.execute(
+                """
+                SELECT cp.id, cp.fecha_compra, cp.cantidad,
+                       cp.precio_costo_unitario, cp.total_compra,
+                       cp.observaciones
+                FROM compras_proveedor cp
+                WHERE cp.proveedor_telefono = %s AND cp.producto_id = %s
+                ORDER BY cp.fecha_compra DESC, cp.id DESC
+                """,
+                (telefono, producto_id)
+            )
+            compras = cursor.fetchall() or []
+            return serializar_datos({
+                'producto': resumen.get('producto') or 'Producto sin nombre',
+                'total_compras': int(resumen.get('total_compras') or 0),
+                'cantidad_total': float(resumen.get('cantidad_total') or 0),
+                'total_gastado': float(resumen.get('total_gastado') or 0),
+                'primera_compra': resumen.get('primera_compra'),
+                'ultima_compra': resumen.get('ultima_compra'),
+                'compras': [{
+                    'id': item.get('id'),
+                    'fecha_compra': item.get('fecha_compra'),
+                    'cantidad': float(item.get('cantidad') or 0),
+                    'precio_costo_unitario': float(item.get('precio_costo_unitario') or 0),
+                    'total_compra': float(item.get('total_compra') or 0),
+                    'observaciones': item.get('observaciones') or ''
+                } for item in compras]
+            })
+        except Exception as e:
+            logger.error(f"Error obteniendo resumen del producto {producto_id}: {str(e)}")
+            return None
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
     
     @staticmethod
     def asignar_productos_a_proveedor(telefono_proveedor, ids_productos):

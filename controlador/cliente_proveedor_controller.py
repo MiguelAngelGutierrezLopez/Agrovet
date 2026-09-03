@@ -1054,6 +1054,18 @@ def obtener_resumen_declaracion_renta():
             'message': f"Error al obtener resumen fiscal: {str(e)}"
         }), 500
 
+@cliente_proveedor_bp.route('/proveedor/<telefono>/producto/<int:producto_id>/resumen', methods=['GET'])
+def obtener_resumen_producto_proveedor(telefono, producto_id):
+    """Obtener compras históricas de un producto sin aplicar fechas."""
+    try:
+        resumen = ClienteProveedorModel.obtener_resumen_compras_producto(telefono, producto_id)
+        if not resumen:
+            return jsonify({'success': False, 'message': 'No hay compras registradas para este producto'}), 404
+        return jsonify({'success': True, 'resumen': resumen})
+    except Exception as e:
+        logger.error(f"Error al obtener resumen del producto: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error al obtener resumen: {str(e)}'}), 500
+
 @cliente_proveedor_bp.route('/declaracion-renta/proveedores', methods=['GET'])
 def obtener_proveedores_declaracion_renta():
     """Lista consolidada por proveedor para el módulo de declaración de renta."""
