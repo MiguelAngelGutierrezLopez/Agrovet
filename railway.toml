@@ -1,0 +1,8 @@
+[build]
+builder = "RAILPACK"
+
+[build.env]
+RAILPACK_APT_PACKAGES = "libcairo2-dev pkg-config"
+
+[deploy]
+startCommand = "python main.py"
