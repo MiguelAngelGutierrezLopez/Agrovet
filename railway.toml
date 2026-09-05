@@ -1,0 +1,10 @@
+[build]
+builder = "RAILPACK"
+
+[build.variables]
+APT_PACKAGES = "libcairo2-dev pkg-config"
+
+[deploy]
+startCommand = "python main.py"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
